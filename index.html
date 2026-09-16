@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>Curriculum Vitae - Editable</title>
+<style>
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+  body {
+    margin: 0;
+    padding: 10px;
+    background: #e9e9f5;
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  .cv-scale-wrap {
+    width: 100%;
+    max-width: 210mm;
+    overflow-x: auto;
+  }
+  .cv {
+    width: 210mm;
+    height: 297mm;
+    max-width: none;
+    background: #fff;
+    display: flex;
+    border: 1px solid #999;
+    overflow: hidden;
+    transform-origin: top left;
+  }
+  @media screen and (max-width: 210mm) {
+    .cv-scale-wrap {
+      max-width: 100vw;
+    }
+  }
+  .sidebar {
+    width: 32%;
+    background: #c9c9f0;
+    padding: 32px 22px;
+    border-right: 1px solid #999;
+    display: flex;
+    flex-direction: column;
+  }
+  .photo-box {
+    width: 170px;
+    height: 200px;
+    background: #fff;
+    border: 1px solid #666;
+    margin: 0 auto 28px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  .photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .photo-box .placeholder {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    padding: 5px;
+  }
+  .sidebar h3 {
+    font-size: 15px;
+    margin: 22px 0 6px 0;
+    color: #111;
+  }
+  .sidebar p, .sidebar div.field {
+    font-size: 14px;
+    margin: 3px 0 10px 0;
+    color: #111;
+    outline: none;
+    min-height: 18px;
+    line-height: 1.5;
+  }
+  .row2 {
+    display: flex;
+    font-size: 14px;
+    margin: 4px 0;
+    line-height: 1.5;
+  }
+  .row2 .label {
+    width: 95px;
+    flex-shrink: 0;
+  }
+  .row2 .val {
+    outline: none;
+  }
+  .main {
+    flex: 1;
+    padding: 34px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+  .title {
+    text-align: center;
+    font-size: 30px;
+    letter-spacing: 2px;
+    margin: 0 0 6px 0;
+    outline: none;
+  }
+  .name {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 6px 0;
+    outline: none;
+  }
+  .email {
+    text-align: center;
+    font-size: 14px;
+    color: #2a4bd7;
+    text-decoration: underline;
+    margin: 0 0 22px 0;
+    outline: none;
+  }
+  .section-header {
+    background: #c9c9f0;
+    padding: 7px 12px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 22px 0 10px 0;
+    outline: none;
+  }
+  .section-body {
+    font-size: 14.5px;
+    line-height: 1.7;
+    padding: 0 4px;
+    outline: none;
+    min-height: 24px;
+  }
+  .margin-ctrl {
+    position: absolute;
+    display: flex;
+    gap: 4px;
+    background: #222;
+    padding: 3px 5px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    z-index: 9999;
+  }
+  .margin-ctrl button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: #4a5fd9;
+    color: #fff;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .margin-ctrl button:hover { background: #3a4bc0; }
+  @media print {
+    .margin-ctrl { display: none !important; }
+  }
+  [contenteditable="true"]:hover {
+    background: rgba(255, 230, 120, 0.25);
+    cursor: text;
+  }
+  [contenteditable="true"]:focus {
+    background: rgba(255, 230, 120, 0.4);
+  }
+  .toolbar {
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto 14px auto;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px;
+  }
+  .toolbar button {
+    background: #4a5fd9;
+    color: #fff;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    margin: 0;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  }
+  .toolbar button:hover { background: #3a4bc0; }
+  @media (min-width: 600px) {
+    .toolbar button { font-size: 14px; padding: 8px 16px; }
+  }
+  @page { size: A4; margin: 0; }
+  @media print {
+    html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .toolbar { display: none; }
+    body { background: #fff; padding: 0; }
+    .cv-scale-wrap { max-width: none !important; height: auto !important; overflow: visible !important; }
+    .cv { border: none; height: 297mm; width: 210mm; page-break-after: avoid; page-break-inside: avoid; transform: none !important; }
+  }
+  .wrap { display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toolbar">
+    <button onclick="window.print()" title="Print / Save PDF">🖨️ Print</button>
+    <button onclick="document.getElementById('photoInput').click()" title="Photo Change Karein">📷 Photo</button>
+    <button onclick="window.__cvSaveWork && window.__cvSaveWork()" title="Save Work">💾 Save</button>
+    <button onclick="window.__cvShareWork && window.__cvShareWork()" title="Share Work">📤 Share</button>
+    <button onclick="document.getElementById('importInput').click()" title="Load / Import Work">📥 Load</button>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" style="display:none">
+  <input type="file" id="importInput" accept="application/json" style="display:none">
+<div class="margin-ctrl" id="marginCtrl" style="display:none;">
+  <button type="button" id="marginMinus">−</button>
+  <button type="button" id="marginPlus">+</button>
+</div>
+
+  <div class="cv-scale-wrap">
+  <div class="cv" id="cvRoot">
+    <div class="sidebar">
+      <div class="photo-box" id="photoBox" onclick="document.getElementById('photoInput').click()">
+        <span class="placeholder">Click karke<br>photo lagayein</span>
+      </div>
+
+      <h3 contenteditable="true">Contact details</h3>
+      <div class="field" contenteditable="true">+91 9324093477</div>
+
+      <h3 contenteditable="true">Present address</h3>
+      <div class="field" contenteditable="true">HYDERABAD TELANGANA</div>
+
+      <h3 contenteditable="true">Present Data</h3>
+      <div class="row2"><div class="label" contenteditable="true">Date of birth</div><div class="val" contenteditable="true">: 01/01/2002</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Gender</div><div class="val" contenteditable="true">: Male</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Religion</div><div class="val" contenteditable="true">: Muslim</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Nationality</div><div class="val" contenteditable="true">: Indian</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Marital Status</div><div class="val" contenteditable="true">: Unmarried</div></div>
+
+      <h3 contenteditable="true">Language Knows :</h3>
+      <div class="field" contenteditable="true">Hindi, English, Urdu.</div>
+
+      <h3 contenteditable="true">Permanent address</h3>
+      <div class="field" contenteditable="true">At- Rampur</div>
+      <div class="field" contenteditable="true">Post- Dhowadanga</div>
+      <div class="field" contenteditable="true">P.S - Hiranpur</div>
+      <div class="field" contenteditable="true">Dist- Pakur (Jharkhand)</div>
+      <div class="field" contenteditable="true">Pin - 816104</div>
+      <div style="flex:1"></div>
+    </div>
+
+    <div class="main">
+      <div class="title" contenteditable="true">CURRICULUM VITAE</div>
+      <div class="name" contenteditable="true">MD. ASHFAQUE ALAM</div>
+      <div class="email" contenteditable="true">ashfaquealam30358@gmail.com</div>
+
+      <div class="section-header" contenteditable="true">Career Objective</div>
+      <div class="section-body" contenteditable="true">Seeking a deserving profile in the hospitality sector, where I can delivery my expertise and innovative hospitality skills, while maintaining the integrity and work ethics of the working environment, thereby maintaining the reputation the organization.</div>
+
+      <div class="section-header" contenteditable="true">Education Qualification</div>
+      <div class="section-body" contenteditable="true">10th Pass</div>
+
+      <div class="section-header" contenteditable="true">Hobbies</div>
+      <div class="section-body" contenteditable="true">Playing Cricket, Football, Reading book, Always learning</div>
+
+      <div class="section-header" contenteditable="true">Basic knowledge</div>
+      <div class="section-body" contenteditable="true">Garnishing of 3D work</div>
+
+      <div class="section-header" contenteditable="true">Work Experience</div>
+      <div class="section-body" contenteditable="true">1) Working at Krispies in Hyderabad as a Commi - I from 29.12.24 to till date<br><br>
+2) Worked at Niranjan Fresh Bake in Vishakhapatnam as a Cake &amp; Pastry Commi - I from 17.11.2022 to 13.10.2024.<br><br>
+3) Worked at Monginis in Este Mumbai Andheri as a Cake &amp; Pastry Commi - II from 13.11.2020 to 07.11.2022.<br><br>
+4) Worked at Sugar and Love in Mumbra Mumbai a Cake &amp; Pastry Commi - III from 07.01.2020 to 20.10.2020.</div>
+
+      <div class="section-header" contenteditable="true">Declaration</div>
+      <div class="section-body" contenteditable="true">I hereby declare that all the above mentioned information is true to the best of my knowledge and belief.</div>
+
+      <div class="section-body" style="margin-top:16px;" contenteditable="true">Place : HYDERABAD</div>
+      <div class="section-body" style="text-align:right;" contenteditable="true">(MD. ASHFAQUE ALAM)</div>
+      <div style="flex:1"></div>
+    </div>
+  </div>
+  </div>
+
+<script>
+  function scaleToFit() {
+    const wrap = document.querySelector('.cv-scale-wrap');
+    const cv = document.getElementById('cvRoot');
+    cv.style.transform = 'none';
+    wrap.style.height = 'auto';
+    const availableWidth = wrap.clientWidth;
+    const cvWidth = cv.offsetWidth;
+    const scale = availableWidth / cvWidth;
+    if (scale < 1) {
+      cv.style.transform = 'scale(' + scale + ')';
+      wrap.style.height = (cv.offsetHeight * scale) + 'px';
+    } else {
+      wrap.style.height = cv.offsetHeight + 'px';
+    }
+  }
+  // ---- Autosave / Restore (persists permanently in this browser) ----
+  (function() {
+    const STORAGE_KEY = 'cv_editable_autosave_v1';
+
+    function collectData(includePhoto) {
+      const data = {};
+      document.querySelectorAll('[contenteditable="true"]').forEach(function(el, i) {
+        if (!el.dataset.saveId) el.dataset.saveId = 'el' + i;
+        data[el.dataset.saveId] = {
+          html: el.innerHTML,
+          marginTop: el.style.marginTop || ''
+        };
+      });
+      if (includePhoto) {
+        const photoBox = document.getElementById('photoBox');
+        const img = photoBox.querySelector('img');
+        data['__photo'] = img ? img.src : '';
+        data['__photoMargin'] = photoBox.style.marginTop || '';
+      }
+      return data;
+    }
+
+    function applyData(data) {
+      if (!data) return;
+      document.querySelectorAll('[contenteditable="true"]').forEach(function(el, i) {
+        if (!el.dataset.saveId) el.dataset.saveId = 'el' + i;
+        const saved = data[el.dataset.saveId];
+        if (saved) {
+          if (typeof saved.html === 'string') el.innerHTML = saved.html;
+          if (saved.marginTop) el.style.marginTop = saved.marginTop;
+        }
+      });
+      // Photo intentionally not touched by JSON import — only text/margins load.
+      if (data['__photo']) {
+        const photoBox = document.getElementById('photoBox');
+        photoBox.innerHTML = '<img src="' + data['__photo'] + '" alt="Photo">';
+        if (data['__photoMargin']) photoBox.style.marginTop = data['__photoMargin'];
+      }
+    }
+
+    function saveState() {
+      const data = collectData(true);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* storage full or unavailable, ignore */ }
+    }
+
+    function restoreState() {
+      let raw;
+      try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+      if (!raw) return;
+      let data;
+      try { data = JSON.parse(raw); } catch (e) { return; }
+      applyData(data);
+    }
+
+    // Restore first, before scaleToFit runs, so layout height is correct
+    restoreState();
+
+    // Save on every text edit
+    document.querySelectorAll('[contenteditable="true"]').forEach(function(el) {
+      el.addEventListener('input', saveState);
+      el.addEventListener('blur', saveState);
+    });
+
+    // Save whenever a margin +/- adjustment happens or photo changes
+    window.__cvSaveState = saveState;
+    window.__cvCollectData = collectData;
+    window.__cvApplyData = applyData;
+
+    // Also save periodically as a safety net
+    setInterval(saveState, 4000);
+    window.addEventListener('beforeunload', saveState);
+
+    // ---- Manual Save Work button ----
+    window.__cvSaveWork = function() {
+      saveState();
+      alert('Work save ho gaya! ✅');
+    };
+
+    // ---- Share Work (export JSON + Web Share API) ----
+    window.__cvShareWork = async function() {
+      const data = collectData(false);
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const file = new File([blob], 'cv-work.json', { type: 'application/json' });
+
+      // Try native share (works well on mobile, e.g. WhatsApp)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'CV Work File',
+            text: 'Mera CV data file (cv-work.json) - isko CV editor mein import karo.'
+          });
+          return;
+        } catch (e) {
+          // user cancelled or share failed, fall back to download
+        }
+      }
+
+      // Fallback: just download the file
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cv-work.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    // ---- Load / Import Work ----
+    const importInput = document.getElementById('importInput');
+    importInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          const data = JSON.parse(ev.target.result);
+          applyData(data);
+          saveState();
+          scaleToFit();
+          alert('Work import ho gaya! ✅');
+        } catch (err) {
+          alert('Yeh file valid nahi hai. Sahi cv-work.json file chunein.');
+        }
+      };
+      reader.readAsText(file);
+      importInput.value = '';
+    });
+  })();
+
+  window.addEventListener('load', scaleToFit);
+  window.addEventListener('resize', scaleToFit);
+
+  // ---- Margin +/- floating control ----
+  (function() {
+    const ctrl = document.getElementById('marginCtrl');
+    const btnPlus = document.getElementById('marginPlus');
+    const btnMinus = document.getElementById('marginMinus');
+    let activeEl = null;
+    const STEP = 2; // px per click
+
+    function getTopMargin(el) {
+      const v = parseInt(window.getComputedStyle(el).marginTop, 10);
+      return isNaN(v) ? 0 : v;
+    }
+
+    function positionCtrl(el) {
+      const rect = el.getBoundingClientRect();
+      ctrl.style.top = (window.scrollY + rect.top - 30) + 'px';
+      ctrl.style.left = (window.scrollX + rect.right - 60) + 'px';
+      ctrl.style.display = 'flex';
+    }
+
+    function selectElement(el) {
+      activeEl = el;
+      positionCtrl(el);
+    }
+
+    function adjustMargin(delta) {
+      if (!activeEl) return;
+      const current = getTopMargin(activeEl);
+      let next = current + delta;
+      if (next < -100) next = -100;
+      activeEl.style.marginTop = next + 'px';
+      positionCtrl(activeEl);
+      if (window.__cvSaveState) window.__cvSaveState();
+    }
+
+    btnPlus.addEventListener('click', function(e) {
+      e.preventDefault();
+      adjustMargin(STEP);
+    });
+    btnMinus.addEventListener('click', function(e) {
+      e.preventDefault();
+      adjustMargin(-STEP);
+    });
+
+    // Attach to all editable / interactive elements
+    const targets = document.querySelectorAll('[contenteditable="true"], .photo-box');
+    targets.forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        selectElement(el);
+      });
+      el.addEventListener('focus', function() {
+        selectElement(el);
+      });
+    });
+
+    // Keep control positioned on scroll/resize while active
+    window.addEventListener('scroll', function() {
+      if (activeEl) positionCtrl(activeEl);
+    }, true);
+    window.addEventListener('resize', function() {
+      if (activeEl) positionCtrl(activeEl);
+    });
+
+    // Hide control when clicking outside any target and outside the control itself
+    document.addEventListener('click', function(e) {
+      if (ctrl.contains(e.target)) return;
+      const isTarget = e.target.closest('[contenteditable="true"], .photo-box');
+      if (!isTarget) {
+        ctrl.style.display = 'none';
+        activeEl = null;
+      }
+    });
+  })();
+</script>
+<script>
+  const photoInput = document.getElementById('photoInput');
+  const photoBox = document.getElementById('photoBox');
+  photoInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      photoBox.innerHTML = '<img src="' + ev.target.result + '" alt="Photo">';
+      if (window.__cvSaveState) window.__cvSaveState();
+    };
+    reader.readAsDataURL(file);
+  });
+</script>
+</body>
+  </html>
