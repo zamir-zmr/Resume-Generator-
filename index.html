@@ -231,7 +231,7 @@
       </div>
 
       <h3 contenteditable="true">Contact details</h3>
-      <div class="field" contenteditable="true">+91 9324093477</div>
+      <div class="field" contenteditable="true">+91 1234567890</div>
 
       <h3 contenteditable="true">Present address</h3>
       <div class="field" contenteditable="true">HYDERABAD TELANGANA</div>
@@ -257,8 +257,8 @@
 
     <div class="main">
       <div class="title" contenteditable="true">CURRICULUM VITAE</div>
-      <div class="name" contenteditable="true">MD. ASHFAQUE ALAM</div>
-      <div class="email" contenteditable="true">ashfaquealam30358@gmail.com</div>
+      <div class="name" contenteditable="true">MD. Name</div>
+      <div class="email" contenteditable="true">abcd@gmail.com</div>
 
       <div class="section-header" contenteditable="true">Career Objective</div>
       <div class="section-body" contenteditable="true">Seeking a deserving profile in the hospitality sector, where I can delivery my expertise and innovative hospitality skills, while maintaining the integrity and work ethics of the working environment, thereby maintaining the reputation the organization.</div>
@@ -282,7 +282,7 @@
       <div class="section-body" contenteditable="true">I hereby declare that all the above mentioned information is true to the best of my knowledge and belief.</div>
 
       <div class="section-body" style="margin-top:16px;" contenteditable="true">Place : HYDERABAD</div>
-      <div class="section-body" style="text-align:right;" contenteditable="true">(MD. ASHFAQUE ALAM)</div>
+      <div class="section-body" style="text-align:right;" contenteditable="true">(MD. NAME)</div>
       <div style="flex:1"></div>
     </div>
   </div>
@@ -317,11 +317,11 @@
           marginTop: el.style.marginTop || ''
         };
       });
+      const photoBox = document.getElementById('photoBox');
+      data['__photoMargin'] = photoBox.style.marginTop || '';
       if (includePhoto) {
-        const photoBox = document.getElementById('photoBox');
         const img = photoBox.querySelector('img');
         data['__photo'] = img ? img.src : '';
-        data['__photoMargin'] = photoBox.style.marginTop || '';
       }
       return data;
     }
@@ -336,9 +336,12 @@
           if (saved.marginTop) el.style.marginTop = saved.marginTop;
         }
       });
-      // Photo intentionally not touched by JSON import — only text/margins load.
+      const photoBox = document.getElementById('photoBox');
+      if (data['__photoMargin']) {
+        photoBox.style.marginTop = data['__photoMargin'];
+      }
+      // Photo image itself is only carried when explicitly included (local autosave).
       if (data['__photo']) {
-        const photoBox = document.getElementById('photoBox');
         photoBox.innerHTML = '<img src="' + data['__photo'] + '" alt="Photo">';
         if (data['__photoMargin']) photoBox.style.marginTop = data['__photoMargin'];
       }
@@ -531,4 +534,4 @@
   });
 </script>
 </body>
-  </html>
+                                                                                       </html>
