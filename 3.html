@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Curriculum Vitae - Editable</title>
+<style>
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+  body {
+    margin: 0;
+    padding: 10px;
+    background: #e9e9f5;
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+  /* ---------- Shared Toolbar ---------- */
+  .toolbar {
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto 14px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    background: #d7d7ef;
+    border-radius: 10px;
+  }
+  .toolbar button {
+    background: #4a5fd9;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    margin: 0;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  }
+  .toolbar button:hover { background: #3a4bc0; }
+  #addBoxBtn { background: #1e9e63; }
+  #addBoxBtn:hover { background: #167a4c; }
+
+  .toolbar-sep { width: 1px; align-self: stretch; background: rgba(0,0,0,0.15); margin: 0 2px; }
+
+  .color-swatches { display: flex; align-items: center; gap: 5px; background: #222; padding: 5px 8px; border-radius: 8px; }
+  .color-swatches .lbl { color: #fff; font-size: 11px; margin-right: 2px; white-space: nowrap; }
+  .color-swatches .swatch {
+    width: 20px; height: 20px; border-radius: 5px; cursor: pointer;
+    border: 1.5px solid rgba(255,255,255,0.7); padding: 0;
+  }
+  .color-swatches .swatch:hover { transform: scale(1.15); }
+
+  /* ---------- Layout dropdown ---------- */
+  .layout-dd { position: relative; flex: 0 0 auto; }
+  .layout-dd > button {
+    background: #222;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .layout-dd > button:hover { background: #000; }
+  .layout-dd .menu {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: #fff;
+    color: #222;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    overflow: hidden;
+    min-width: 140px;
+    z-index: 10000;
+  }
+  .layout-dd.open .menu { display: block; }
+  .layout-dd .menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    color: #222;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  .layout-dd .menu button:hover { background: #eef1ff; }
+  .layout-dd .menu button.active { font-weight: bold; color: #4a5fd9; }
+
+  /* ---------- Margin control (shared) ---------- */
+  .margin-ctrl {
+    position: absolute;
+    display: none;
+    gap: 4px;
+    background: #222;
+    padding: 3px 5px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    z-index: 9999;
+  }
+  .margin-ctrl button.mv {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: #4a5fd9;
+    color: #fff;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .margin-ctrl button.mv:hover { background: #3a4bc0; }
+  .margin-ctrl button.del {
+    width: 24px; height: 24px; border: none; border-radius: 4px;
+    background: #d9463f; color: #fff; font-size: 13px; cursor: pointer; padding: 0;
+  }
+  .margin-ctrl button.del:hover { background: #a83229; }
+
+  [contenteditable="true"]:hover {
+    background: rgba(255, 230, 120, 0.25);
+    cursor: text;
+  }
+  [contenteditable="true"]:focus {
+    background: rgba(255, 230, 120, 0.4);
+  }
+
+  .selected-box {
+    outline: 2px dashed #4a86e8 !important;
+    outline-offset: 2px;
+  }
+
+  @page { size: A4; margin: 0; }
+  @media print {
+    .toolbar { display: none !important; }
+    body { background: #fff; padding: 0; margin: 0; }
+    .margin-ctrl { display: none !important; }
+    .selected-box { outline: none !important; }
+  }
+
+  /* Container wrapper style for both layouts */
+  .layout-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* =====================================================
+     LAYOUT 1 (scoped under #layout1)
+  ===================================================== */
+  #layout1 .cv-scale-wrap {
+    width: 100%;
+    max-width: 210mm;
+    overflow-x: auto;
+  }
+  #layout1 .cv {
+    width: 210mm;
+    height: 297mm;
+    max-width: none;
+    background: #fff;
+    display: flex;
+    border: 1px solid #999;
+    overflow: hidden;
+    transform-origin: top left;
+  }
+  @media screen and (max-width: 210mm) {
+    #layout1 .cv-scale-wrap { max-width: 100vw; }
+  }
+  #layout1 .sidebar {
+    width: 32%;
+    background: #c9c9f0;
+    padding: 32px 22px;
+    border-right: 1px solid #999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #layout1 .photo-box {
+    width: 170px;
+    height: 200px;
+    background: #fff;
+    border: 1px solid #666;
+    margin: 0 auto 28px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  #layout1 .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+  #layout1 .photo-box .placeholder { font-size: 12px; color: #666; text-align: center; padding: 5px; }
+  #layout1 .sidebar h3 { font-size: 15px; margin: 22px 0 6px 0; color: #111; }
+  #layout1 .sidebar p, #layout1 .sidebar div.field {
+    font-size: 14px; margin: 3px 0 10px 0; color: #111; outline: none; min-height: 18px; line-height: 1.5;
+  }
+  #layout1 .row2 { display: flex; font-size: 14px; margin: 4px 0; line-height: 1.5; }
+  #layout1 .row2 .label { width: 95px; flex-shrink: 0; }
+  #layout1 .row2 .val { outline: none; }
+  #layout1 .main { flex: 1; padding: 34px 32px; display: flex; flex-direction: column; overflow: hidden; }
+  #layout1 .title { text-align: center; font-size: 30px; letter-spacing: 2px; margin: 0 0 6px 0; outline: none; }
+  #layout1 .name { text-align: center; font-size: 16px; font-weight: bold; margin: 6px 0; outline: none; }
+  #layout1 .email { text-align: center; font-size: 14px; color: #2a4bd7; text-decoration: underline; margin: 0 0 22px 0; outline: none; }
+  #layout1 .section-header { background: #c9c9f0; padding: 7px 12px; font-size: 16px; font-weight: bold; margin: 22px 0 10px 0; outline: none; }
+  #layout1 .section-body { font-size: 14.5px; line-height: 1.7; padding: 0 4px; outline: none; min-height: 24px; }
+  #layout1 .user-box { margin: 10px 0; }
+
+  @media print {
+    #layout1 .cv-scale-wrap { max-width: none !important; width: 210mm !important; height: 297mm !important; max-height: 297mm !important; overflow: hidden !important; }
+    #layout1 .cv { border: none; height: 297mm; width: 210mm; max-height: 297mm; page-break-after: avoid; page-break-inside: avoid; transform: none !important; overflow: hidden !important; }
+    #layout1 .sidebar, #layout1 .main { overflow: hidden !important; }
+  }
+
+  /* =====================================================
+     LAYOUT 2 (scoped under #layout2)
+  ===================================================== */
+  #layout2 {
+    --cv-fit-w: min(210mm, 98vw, calc((98vh - 70px) * 210 / 297));
+  }
+  #layout2 .cv-scale-wrap {
+    width: var(--cv-fit-w);
+    aspect-ratio: 210 / 297;
+    max-width: 210mm;
+    overflow: hidden;
+    position: relative;
+    margin: 0 auto;
+  }
+  #layout2 .cv {
+    width: 210mm;
+    height: 297mm;
+    max-width: none;
+    background: #ffffff;
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    transform-origin: top left;
+    transform: scale(calc(var(--cv-fit-w) / 210mm));
+    box-shadow: 0 4px 20px rgba(20,50,120,0.15);
+  }
+  #layout2 .wave-tl { position: absolute; top: 0; left: 0; width: 340px; height: 140px; pointer-events: none; z-index: 0; }
+  #layout2 .wave-br { position: absolute; bottom: 0; right: 0; width: 260px; height: 120px; pointer-events: none; z-index: 0; }
+  #layout2 .sidebar {
+    width: 32%;
+    background: linear-gradient(180deg, #eaf1fb 0%, #dbe8f9 100%);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+  #layout2 .photo-box {
+    width: 160px; height: 185px; background: #fff; border: 3px solid #1c4d9e; border-radius: 8px;
+    margin: 0 auto 22px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(20,50,120,0.2);
+  }
+  #layout2 .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+  #layout2 .photo-box .placeholder { font-size: 12px; color: #666; text-align: center; padding: 5px; }
+  #layout2 .sb-heading { display: flex; align-items: center; gap: 8px; background: #cfe0f7; border-radius: 6px; padding: 6px 10px; margin: 16px 0 8px 0; }
+  #layout2 .sb-heading .icon { width: 22px; height: 22px; min-width: 22px; border-radius: 50%; background: #1c4d9e; display: flex; align-items: center; justify-content: center; }
+  #layout2 .sb-heading .icon svg { display: block; }
+  #layout2 .sb-heading h3 { margin: 0; font-size: 13.5px; color: #12305e; font-weight: 700; outline: none; flex: 1; }
+  #layout2 .sidebar p, #layout2 .sidebar div.field { font-size: 13px; margin: 3px 0 8px 26px; color: #22355c; outline: none; min-height: 16px; line-height: 1.5; }
+  #layout2 .row2 { display: flex; font-size: 13px; margin: 3px 0 3px 26px; line-height: 1.5; color: #22355c; }
+  #layout2 .row2 .label { width: 95px; flex-shrink: 0; font-weight: 600; }
+  #layout2 .row2 .val { outline: none; }
+  #layout2 .main { flex: 1; padding: 22px 28px 14px 28px; display: flex; flex-direction: column; position: relative; z-index: 1; overflow: hidden; }
+  #layout2 .title { text-align: center; font-size: 26px; letter-spacing: 1px; font-weight: 800; color: #12305e; margin: 0 0 4px 0; outline: none; }
+  #layout2 .title-underline { width: 80px; height: 3px; background: #4a86e8; margin: 0 auto 8px auto; border-radius: 2px; }
+  #layout2 .name { text-align: center; font-size: 17px; font-weight: 700; color: #1c4d9e; margin: 3px 0; outline: none; }
+  #layout2 .email-row { text-align: center; margin: 0 0 10px 0; }
+  #layout2 .email-row .icon-inline { display: inline-flex; width: 16px; height: 16px; background: #1c4d9e; border-radius: 3px; align-items: center; justify-content: center; margin-right: 5px; vertical-align: middle; }
+  #layout2 .email-row .icon-inline svg { width: 10px; height: 10px; display: block; }
+  #layout2 .email { font-size: 13.5px; color: #1c4d9e; text-decoration: underline; outline: none; }
+  #layout2 .section-header { display: flex; align-items: center; gap: 10px; background: linear-gradient(90deg, #d9e8fb 0%, #eef4fd 100%); border-radius: 6px; padding: 6px 12px; margin: 10px 0 6px 0; }
+  #layout2 .section-header .icon { width: 24px; height: 24px; min-width: 24px; border-radius: 50%; background: #1c4d9e; display: flex; align-items: center; justify-content: center; }
+  #layout2 .section-header .icon svg { width: 13px; height: 13px; display: block; }
+  #layout2 .section-header h2 { margin: 0; font-size: 14.5px; font-weight: 700; color: #12305e; outline: none; flex: 1; }
+  #layout2 .section-body { font-size: 12.5px; line-height: 1.45; padding: 0 4px 0 34px; outline: none; min-height: 18px; color: #222; }
+  #layout2 .work-item { margin-bottom: 4px; }
+  #layout2 .user-box { margin: 8px 0; }
+
+  #layout2 [contenteditable="true"]:hover { background: rgba(74, 134, 232, 0.15); cursor: text; border-radius: 3px; }
+  #layout2 [contenteditable="true"]:focus { background: rgba(74, 134, 232, 0.25); border-radius: 3px; }
+
+  html { height: 297mm; }
+  @media print {
+    html, body { height: 297mm; max-height: 297mm; overflow: hidden; }
+    .wrap { height: 297mm; max-height: 297mm; overflow: hidden; }
+    .layout-container { height: 297mm !important; max-height: 297mm !important; overflow: hidden !important; }
+    #layout2 .cv-scale-wrap { aspect-ratio: unset !important; max-width: none !important; width: 210mm !important; height: 297mm !important; max-height: 297mm !important; overflow: hidden !important; }
+    #layout2 .cv { border: none; height: 297mm; width: 210mm; max-height: 297mm; page-break-after: avoid; page-break-before: avoid; page-break-inside: avoid; transform: none !important; box-shadow: none; overflow: hidden !important; }
+    #layout2 .sidebar, #layout2 .main { overflow: hidden !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toolbar">
+    <div class="layout-dd" id="layoutDD">
+      <button type="button" id="layoutDDBtn"> Layout ▾</button>
+      <div class="menu">
+        <button type="button" data-layout="1">Layout 1</button>
+        <button type="button" data-layout="2">Layout 2</button>
+      </div>
+    </div>
+    <button type="button" id="printBtn" title="Print / Save PDF">🖨️ Print</button>
+    <button type="button" id="photoBtn" title="Photo Change Karein">📷 Photo</button>
+    <button type="button" id="addBoxBtn" title="Naya Box Add Karein">➕ Box</button>
+    <button type="button" id="saveBtn" title="Save Work">💾 Save</button>
+    <button type="button" id="shareBtn" title="Share Work">📤 Share</button>
+    <button type="button" id="loadBtn" title="Load / Import Work">📥 Load</button>
+
+    <div class="toolbar-sep"></div>
+
+    <div class="color-swatches" id="colorSwatches">
+      <span class="lbl">🎨 Box pehle select karein, phir color:</span>
+      <button type="button" class="swatch" data-color="#ffffff" style="background:#ffffff;" title="White"></button>
+      <button type="button" class="swatch" data-color="#fff3b0" style="background:#fff3b0;" title="Yellow"></button>
+      <button type="button" class="swatch" data-color="#c9c9f0" style="background:#c9c9f0;" title="Lavender"></button>
+      <button type="button" class="swatch" data-color="#cfe0f7" style="background:#cfe0f7;" title="Blue"></button>
+      <button type="button" class="swatch" data-color="#c8f0d5" style="background:#c8f0d5;" title="Green"></button>
+      <button type="button" class="swatch" data-color="#f7c9c9" style="background:#f7c9c9;" title="Pink"></button>
+      <button type="button" class="swatch" data-color="#ffd9a0" style="background:#ffd9a0;" title="Orange"></button>
+      <button type="button" class="swatch" data-color="#222222" style="background:#222222;" title="Dark"></button>
+    </div>
+  </div>
+
+  <input type="file" id="photoInput1" accept="image/*" style="display:none">
+  <input type="file" id="importInput1" accept="application/json" style="display:none">
+  <input type="file" id="photoInput2" accept="image/*" style="display:none">
+  <input type="file" id="importInput2" accept="application/json" style="display:none">
+
+  <div class="margin-ctrl" id="marginCtrl">
+    <button type="button" class="mv" id="marginMinus">−</button>
+    <button type="button" class="mv" id="marginPlus">+</button>
+    <button type="button" class="del" id="marginDelete" title="Box hatayein" style="display:none;">🗑</button>
+  </div>
+
+  <!-- ================= LAYOUT 1 ================= -->
+  <div id="layout1" class="layout-container">
+  <div class="cv-scale-wrap">
+  <div class="cv" id="cvRoot1">
+    <div class="sidebar">
+      <div class="photo-box" id="photoBox1">
+        <span class="placeholder">Click karke<br>photo lagayein</span>
+      </div>
+
+      <h3 contenteditable="true">Contact details</h3>
+      <div class="field" contenteditable="true">+91 1234567890</div>
+
+      <h3 contenteditable="true">Present address</h3>
+      <div class="field" contenteditable="true">HYDERABAD TELANGANA</div>
+
+      <h3 contenteditable="true">Present Data</h3>
+      <div class="row2"><div class="label" contenteditable="true">Date of birth</div><div class="val" contenteditable="true">: 01/01/2002</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Gender</div><div class="val" contenteditable="true">: Male</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Religion</div><div class="val" contenteditable="true">: Muslim</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Nationality</div><div class="val" contenteditable="true">: Indian</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Marital Status</div><div class="val" contenteditable="true">: Unmarried</div></div>
+
+      <h3 contenteditable="true">Language Knows :</h3>
+      <div class="field" contenteditable="true">Hindi, English, Urdu.</div>
+
+      <h3 contenteditable="true">Permanent address</h3>
+      <div class="field" contenteditable="true">At- Rampur</div>
+      <div class="field" contenteditable="true">Post- Dhowadanga</div>
+      <div class="field" contenteditable="true">P.S - Hiranpur</div>
+      <div class="field" contenteditable="true">Dist- Pakur (Jharkhand)</div>
+      <div class="field" contenteditable="true">Pin - 816104</div>
+      <div style="flex:1"></div>
+    </div>
+
+    <div class="main">
+      <div class="title" contenteditable="true">CURRICULUM VITAE</div>
+      <div class="name" contenteditable="true">MD. Name</div>
+      <div class="email" contenteditable="true">abcd@gmail.com</div>
+
+      <div class="section-header" contenteditable="true">Career Objective</div>
+      <div class="section-body" contenteditable="true">Seeking a deserving profile in the hospitality sector, where I can delivery my expertise and innovative hospitality skills, while maintaining the integrity and work ethics of the working environment, thereby maintaining the reputation the organization.</div>
+
+      <div class="section-header" contenteditable="true">Education Qualification</div>
+      <div class="section-body" contenteditable="true">10th Pass</div>
+
+      <div class="section-header" contenteditable="true">Hobbies</div>
+      <div class="section-body" contenteditable="true">Playing Cricket, Football, Reading book, Always learning</div>
+
+      <div class="section-header" contenteditable="true">Basic knowledge</div>
+      <div class="section-body" contenteditable="true">Garnishing of 3D work</div>
+
+      <div class="section-header" contenteditable="true">Work Experience</div>
+      <div class="section-body" contenteditable="true">1) Working at Krispies in Hyderabad as a Commi - I from 29.12.24 to till date<br><br>
+2) Worked at Niranjan Fresh Bake in Vishakhapatnam as a Cake &amp; Pastry Commi - I from 17.11.2022 to 13.10.2024.<br><br>
+3) Worked at Monginis in Este Mumbai Andheri as a Cake &amp; Pastry Commi - II from 13.11.2020 to 07.11.2022.<br><br>
+4) Worked at Sugar and Love in Mumbra Mumbai a Cake &amp; Pastry Commi - III from 07.01.2020 to 20.10.2020.</div>
+
+      <div class="section-header" contenteditable="true">Declaration</div>
+      <div class="section-body" contenteditable="true">I hereby declare that all the above mentioned information is true to the best of my knowledge and belief.</div>
+
+      <div class="section-body" style="margin-top:16px;" contenteditable="true">Place : HYDERABAD</div>
+      <div class="section-body" style="text-align:right;" contenteditable="true">(MD. NAME)</div>
+      <div style="flex:1"></div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- ================= LAYOUT 2 ================= -->
+
+<div id="layout2" class="layout-container" style="display:none;">
+  <div class="cv-scale-wrap">
+  <div class="cv" id="cvRoot2">
+
+    <svg class="wave-tl" viewBox="0 0 340 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,0 L340,0 L340,40 C260,90 160,20 60,60 C30,72 10,55 0,70 Z" fill="#dbe8f9"/>
+      <path d="M0,0 L300,0 L300,20 C220,60 140,10 50,40 C25,50 10,38 0,50 Z" fill="#aecbef"/>
+    </svg>
+    <svg class="wave-br" viewBox="0 0 260 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M260,120 L0,120 L0,90 C90,50 170,110 260,70 Z" fill="#dbe8f9"/>
+      <path d="M260,120 L60,120 L60,105 C140,80 190,115 260,90 Z" fill="#aecbef"/>
+    </svg>
+
+    <div class="sidebar">
+      <div class="photo-box" id="photoBox2">
+        <span class="placeholder">Click karke<br>photo lagayein</span>
+      </div>
+
+      <div class="sb-heading"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.8 21 3 13.2 3 3c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg></span><h3 contenteditable="true">Contact details</h3></div>
+      <div class="field" contenteditable="true">+91 9324093477</div>
+
+      <div class="sb-heading"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span><h3 contenteditable="true">Present address</h3></div>
+      <div class="field" contenteditable="true">HYDERABAD TELANGANA</div>
+
+      <div class="sb-heading"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM9 15H6v-1c0-1 2-1.5 3-1.5s3 .5 3 1.5v1H9zm0-4.5A1.5 1.5 0 1 1 9 7a1.5 1.5 0 0 1 0 3.5zM20 15h-6v-1.5h6V15zm0-3h-6v-1.5h6V12z"/></svg></span><h3 contenteditable="true">Current Data</h3></div>
+      <div class="row2"><div class="label" contenteditable="true">Date of birth</div><div class="val" contenteditable="true">: 01/01/2002</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Gender</div><div class="val" contenteditable="true">: Male</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Religion</div><div class="val" contenteditable="true">: Muslim</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Nationality</div><div class="val" contenteditable="true">: Indian</div></div>
+      <div class="row2"><div class="label" contenteditable="true">Marital Status</div><div class="val" contenteditable="true">: Unmarried</div></div>
+
+      <div class="sb-heading"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm7.9 8h-3.3c-.1-1.8-.5-3.4-1.1-4.7C17.8 6.4 19.4 8 19.9 10zM12 4.1c.8 1 1.7 2.9 1.9 5.9h-3.8c.2-3 1.1-4.9 1.9-5.9zM4.1 10c.5-2 2.1-3.6 4.4-4.7-.6 1.3-1 2.9-1.1 4.7H4.1zm0 4h3.3c.1 1.8.5 3.4 1.1 4.7C6.2 17.6 4.6 16 4.1 14zM12 19.9c-.8-1-1.7-2.9-1.9-5.9h3.8c-.2 3-1.1 4.9-1.9 5.9zm2.1-.2c.6-1.3 1-2.9 1.1-4.7h3.3c-.5 2-2.1 3.6-4.4 4.7z"/></svg></span><h3 contenteditable="true">Language Knows:</h3></div>
+      <div class="field" contenteditable="true">Hindi, English, Urdu.</div>
+
+      <div class="sb-heading"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg></span><h3 contenteditable="true">Permanent Address</h3></div>
+      <div class="field" contenteditable="true">At- Rampur</div>
+      <div class="field" style="margin-top:-6px" contenteditable="true">Post- Dhowadanga</div>
+      <div class="field" style="margin-top:-6px" contenteditable="true">P.S - Hiranpur</div>
+      <div class="field" style="margin-top:-6px" contenteditable="true">Dist- Pakur (Jharkhand)</div>
+      <div class="field" style="margin-top:-6px" contenteditable="true">Pin - 816104</div>
+      <div style="flex:1"></div>
+    </div>
+
+    <div class="main">
+      <div class="title" contenteditable="true">CURRICULUM VITAE</div>
+      <div class="title-underline"></div>
+      <div class="name" contenteditable="true">MD. ASHFAQUE ALAM</div>
+      <div class="email-row">
+        <span class="icon-inline"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span><span class="email" contenteditable="true">ashfaquealam30358@gmail.com</span>
+      </div>
+
+      <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 5h4v2h-4V5zm10 13H4V9h16v9z"/></svg></span><h2 contenteditable="true">Career Objective</h2></div>
+      <div class="section-body" contenteditable="true">Seeking a deserving profile in the hospitality sector, where I can deliver my expertise and innovative hospitality skills, while maintaining the integrity and work ethics of the working environment, thereby maintaining the reputation of the organization.</div>
+
+      <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M12 3L1 9l4 2.2V16c0 1.1 3.1 3 7 3s7-1.9 7-3v-4.8L21 9l-3 1.6V16h-2v-4.5l-4 2.2-4-2.2V16H6v-4.4L3 9.9 12 5.5l9 4.4-9 4.5-6.5-3.2 6.5 3.6 9-4.5L12 3z"/></svg></span><h2 contenteditable="true">Education Qualification</h2></div>
+      <div class="section-body" contenteditable="true">10th Pass</div>
+
+      <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M17.5 7h-11C4.6 7 3 8.6 3 10.5v3C3 15.4 4.6 17 6.5 17c1.1 0 2.1-.5 2.7-1.4L10 14h4l.8 1.6c.6.9 1.6 1.4 2.7 1.4 1.9 0 3.5-1.6 3.5-3.5v-3C21 8.6 19.4 7 17.5 7zM10.5 11.5h-2v2H7v-2H5v-1.5h2v-2h1.5v2h2v1.5zM15 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm2.5 2a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg></span><h2 contenteditable="true">Hobbies</h2></div>
+      <div class="section-body" contenteditable="true">Playing Cricket, Football, Reading book, Always learning</div>
+
+      <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M19.4 13c.04-.32.06-.66.06-1s-.02-.68-.07-1l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42L9.13 5.07c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.05.32-.07.66-.07 1s.02.68.07 1L2.46 14.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.31.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64L19.4 13zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></span><h2 contenteditable="true">Basic Knowledge</h2></div>
+      <div class="section-body" contenteditable="true">Garnishing of 3D work</div>
+
+      <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M20.7 13.3l-1.4 1.4-6.3-6.3 1.4-1.4c.4-.4.4-1 0-1.4l-1.9-1.9c-.4-.4-1-.4-1.4 0L9.7 5.1 8.3 3.7c-.4-.4-1-.4-1.4 0L5.5 5.1c-.4.4-.4 1 0 1.4l1.4 1.4-4.2 4.2c-.4.4-.4 1 0 1.4l1.9 1.9c.4.4 1 .4 1.4 0l4.2-4.2 6.3 6.3-1.4 1.4c-.4.4-.4 1 0 1.4l1.9 1.9c.4.4 1 .4 1.4 0l4.2-4.2c.4-.4.4-1 0-1.4l-1.9-1.9c-.4-.4-1-.4-1.4 0z"/></svg></span><h2 contenteditable="true">Work Experience</h2></div>
+      <div class="section-body" contenteditable="true">
+        <div class="work-item">1) Working at Krispies in Hyderabad as a Commi - I from 29.12.24 to till date.</div>
+        <div class="work-item">2) Worked at Niranjan Fresh Bake in Vishakhapatnam as a Cake &amp; Pastry Commi - I from 17.11.2022 to 13.10.2024.</div>
+        <div class="work-item">3) Worked at Monginis in Este Mumbai Andheri as a Cake &amp; Pastry Commi - II from 13.11.2020 to 07.11.2022.</div>
+        <div class="work-item">4) Worked at Sugar and Love in Mumbra Mumbai as a Cake &amp; Pastry Commi - III from 07.01.2020 to 20.10.2020.</div>
+      </div>
+
+      <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M19 3h-4.2C14.4 1.8 13.3 1 12 1s-2.4.8-2.8 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.6 0 1 .4 1 1s-.4 1-1 1-1-.4-1-1 .4-1 1-1zm7 16H5V5h2v3h10V5h2v14z"/></svg></span><h2 contenteditable="true">Declaration</h2></div>
+      <div class="section-body" contenteditable="true">I hereby declare that all the above mentioned information is true to the best of my knowledge and belief.</div>
+
+      <div class="section-body" style="margin-top:16px; padding-left:4px;" contenteditable="true">Place : HYDERABAD</div>
+      <div class="section-body" style="text-align:right; font-weight:600;" contenteditable="true">(MD. ASHFAQUE ALAM)</div>
+      <div style="flex:1"></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+
+</div>
+
+<script>
+(function(){
+  try {
+
+  const LAYOUT_KEY = 'cv_active_layout_v1';
+
+  const layout1El = document.getElementById('layout1');
+  const layout2El = document.getElementById('layout2');
+
+  // ---------- Margin / selection control (shared, defined early) ----------
+  const ctrlEl = document.getElementById('marginCtrl');
+  const btnPlus = document.getElementById('marginPlus');
+  const btnMinus = document.getElementById('marginMinus');
+  const btnDelete = document.getElementById('marginDelete');
+  let activeEl = null;
+  let activeCtrl = null;
+  const STEP = 2;
+
+  function resolveTarget(raw){
+    return raw.closest('.user-box') ||
+           raw.closest('.sb-heading') ||
+           raw.closest('.section-header') ||
+           raw.closest('.row2') ||
+           raw.closest('.field') ||
+           raw.closest('.photo-box') ||
+           raw;
+  }
+
+  function getTopMargin(el){
+    const v = parseInt(window.getComputedStyle(el).marginTop, 10);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function positionCtrl(el){
+    const rect = el.getBoundingClientRect();
+    ctrlEl.style.top = (window.scrollY + rect.top - 30) + 'px';
+    ctrlEl.style.left = (window.scrollX + rect.right - 60) + 'px';
+    ctrlEl.style.display = 'flex';
+  }
+
+  function hideCtrl(){
+    ctrlEl.style.display = 'none';
+    if (activeEl) activeEl.classList.remove('selected-box');
+    activeEl = null;
+    activeCtrl = null;
+  }
+
+  function whichCtrl(el){
+    if (layout1El.contains(el)) return 'ctrl1';
+    if (layout2El.contains(el)) return 'ctrl2';
+    return null;
+  }
+
+  function selectElement(rawEl){
+    const el = resolveTarget(rawEl);
+    if (activeEl) activeEl.classList.remove('selected-box');
+    activeEl = el;
+    activeEl.classList.add('selected-box');
+    activeCtrl = whichCtrl(el);
+    btnDelete.style.display = el.classList.contains('user-box') ? 'inline-block' : 'none';
+    positionCtrl(el);
+  }
+
+  function adjustMargin(delta){
+    if (!activeEl) return;
+    const current = getTopMargin(activeEl);
+    let next = current + delta;
+    if (next < -100) next = -100;
+    activeEl.style.marginTop = next + 'px';
+    positionCtrl(activeEl);
+    saveActive();
+  }
+
+  function saveActive(){
+    if (activeCtrl === 'ctrl1' && window.__ctrl1) window.__ctrl1.saveState();
+    if (activeCtrl === 'ctrl2' && window.__ctrl2) window.__ctrl2.saveState();
+  }
+
+  btnPlus.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); adjustMargin(STEP); });
+  btnMinus.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); adjustMargin(-STEP); });
+  btnDelete.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation();
+    if (!activeEl || !activeEl.classList.contains('user-box')) return;
+    const c = activeCtrl;
+    activeEl.remove();
+    hideCtrl();
+    if (c === 'ctrl1' && window.__ctrl1) window.__ctrl1.saveState();
+    if (c === 'ctrl2' && window.__ctrl2) window.__ctrl2.saveState();
+  });
+
+  // color swatches (toolbar) - apply to currently selected box
+  document.querySelectorAll('#colorSwatches .swatch').forEach(function(sw){
+    sw.addEventListener('click', function(e){
+      e.preventDefault();
+      if (!activeEl) { alert('Pehle kisi box/text par click karke select karein, phir color chunein.'); return; }
+      if (activeEl.classList.contains('photo-box')) return;
+      activeEl.style.backgroundColor = sw.getAttribute('data-color');
+      saveActive();
+    });
+  });
+
+  function attachSelectable(el){
+    el.addEventListener('click', function(e){
+      e.stopPropagation();
+      selectElement(el);
+    });
+    if (el.getAttribute('contenteditable') === 'true') {
+      el.addEventListener('focus', function(){ selectElement(el); });
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    if (ctrlEl.contains(e.target)) return;
+    if (e.target.closest('.toolbar')) { return; }
+    const isInside = e.target.closest('[contenteditable="true"], .photo-box, .user-box');
+    if (!isInside) hideCtrl();
+  });
+
+  window.addEventListener('scroll', function(){ if (activeEl) positionCtrl(activeEl); }, true);
+  window.addEventListener('resize', function(){ if (activeEl) positionCtrl(activeEl); });
+
+  // ---------- Controller factory (per-layout, independent autosave) ----------
+  function createController(containerId, storageKey, photoBoxId){
+    const container = document.getElementById(containerId);
+    const photoBox = document.getElementById(photoBoxId);
+
+    function editableEls(){ return container.querySelectorAll('[contenteditable="true"]'); }
+
+    function collectData(includePhoto){
+      const data = {};
+      editableEls().forEach(function(el, i){
+        if (!el.dataset.saveId) el.dataset.saveId = 'el' + i;
+        data[el.dataset.saveId] = {
+          html: el.innerHTML,
+          marginTop: el.style.marginTop || '',
+          bg: el.style.backgroundColor || ''
+        };
+      });
+      const groupEls = container.querySelectorAll('.sb-heading, .section-header, .row2, .field');
+      groupEls.forEach(function(el, i){
+        if (!el.dataset.groupId) el.dataset.groupId = 'grp' + i;
+        data['__grp_' + el.dataset.groupId] = {
+          marginTop: el.style.marginTop || '',
+          bg: el.style.backgroundColor || ''
+        };
+      });
+      data['__photoMargin'] = photoBox.style.marginTop || '';
+      if (includePhoto) {
+        const img = photoBox.querySelector('img');
+        data['__photo'] = img ? img.src : '';
+      }
+      try {
+        const mainEl = container.querySelector('.main');
+        const extra = [];
+        if (mainEl) {
+          mainEl.querySelectorAll(':scope > .user-box').forEach(function(b){
+            extra.push({
+              html: b.innerHTML,
+              marginTop: b.style.marginTop || '',
+              bg: b.style.backgroundColor || ''
+            });
+          });
+        }
+        data['__extraBoxes'] = extra;
+      } catch(err) { data['__extraBoxes'] = []; }
+      return data;
+    }
+
+    function applyData(data){
+      if (!data) return;
+
+      try {
+        const mainEl = container.querySelector('.main');
+        if (mainEl) {
+          mainEl.querySelectorAll(':scope > .user-box').forEach(function(b){ b.remove(); });
+          if (Array.isArray(data['__extraBoxes'])) {
+            data['__extraBoxes'].forEach(function(item){
+              const box = createBoxNode();
+              box.querySelector('.section-header').innerHTML = item.html ? '' : 'New Heading';
+              if (item.marginTop) box.style.marginTop = item.marginTop;
+              if (item.bg) box.style.backgroundColor = item.bg;
+              insertBox(box);
+              // restore raw html directly if present (overrides default header/body split)
+              if (item.html) box.innerHTML = item.html;
+              attachBoxListeners(box);
+            });
+          }
+        }
+      } catch(err) {}
+
+      editableEls().forEach(function(el, i){
+        if (!el.dataset.saveId) el.dataset.saveId = 'el' + i;
+        const saved = data[el.dataset.saveId];
+        if (saved) {
+          if (typeof saved.html === 'string') el.innerHTML = saved.html;
+          if (saved.marginTop) el.style.marginTop = saved.marginTop;
+          if (saved.bg) el.style.backgroundColor = saved.bg;
+        }
+      });
+      const groupEls = container.querySelectorAll('.sb-heading, .section-header, .row2, .field');
+      groupEls.forEach(function(el, i){
+        if (!el.dataset.groupId) el.dataset.groupId = 'grp' + i;
+        const saved = data['__grp_' + el.dataset.groupId];
+        if (saved) {
+          if (saved.marginTop) el.style.marginTop = saved.marginTop;
+          if (saved.bg) el.style.backgroundColor = saved.bg;
+        }
+      });
+      if (data['__photoMargin']) photoBox.style.marginTop = data['__photoMargin'];
+      if (data['__photo']) {
+        photoBox.innerHTML = '<img src="' + data['__photo'] + '" alt="Photo">';
+        if (data['__photoMargin']) photoBox.style.marginTop = data['__photoMargin'];
+      }
+    }
+
+    function createBoxNode(){
+      const box = document.createElement('div');
+      box.className = 'user-box';
+      box.innerHTML =
+        '<div class="section-header" contenteditable="true">New Heading</div>' +
+        '<div class="section-body" contenteditable="true">Yahan apna text likhein...</div>';
+      return box;
+    }
+
+    function insertBox(box){
+      const mainEl = container.querySelector('.main');
+      if (!mainEl) return;
+      const spacer = mainEl.querySelector(':scope > div[style*="flex:1"]');
+      if (spacer) mainEl.insertBefore(box, spacer); else mainEl.appendChild(box);
+    }
+
+    function attachBoxListeners(box){
+      attachSelectable(box);
+      box.querySelectorAll('[contenteditable="true"]').forEach(function(el){
+        attachSelectable(el);
+        el.addEventListener('input', saveState);
+        el.addEventListener('blur', saveState);
+      });
+    }
+
+    function saveState(){
+      const data = collectData(true);
+      try { localStorage.setItem(storageKey, JSON.stringify(data)); } catch(e){}
+    }
+
+    function restoreState(){
+      let raw;
+      try { raw = localStorage.getItem(storageKey); } catch(e){ return; }
+      if (!raw) return;
+      let data;
+      try { data = JSON.parse(raw); } catch(e){ return; }
+      try { applyData(data); } catch(e){}
+    }
+
+    try { restoreState(); } catch(e){}
+
+    editableEls().forEach(function(el){
+      attachSelectable(el);
+      el.addEventListener('input', saveState);
+      el.addEventListener('blur', saveState);
+    });
+    attachSelectable(photoBox);
+
+    function saveWork(){
+      saveState();
+      alert('Work save ho gaya! ✅');
+    }
+
+    async function shareWork(){
+      const data = collectData(false);
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const file = new File([blob], 'cv-work.json', { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'CV Work File', text: 'Mera CV data file (cv-work.json) - isko CV editor mein import karo.' });
+          return;
+        } catch(e){}
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'cv-work.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importFile(file){
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        try {
+          const data = JSON.parse(ev.target.result);
+          applyData(data);
+          saveState();
+          alert('Work import ho gaya! ✅');
+        } catch(err){
+          alert('Yeh file valid nahi hai. Sahi cv-work.json file chunein.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function handlePhoto(file){
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        photoBox.innerHTML = '<img src="' + ev.target.result + '" alt="Photo">';
+        saveState();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addBox(){
+      const box = createBoxNode();
+      insertBox(box);
+      attachBoxListeners(box);
+      saveState();
+      return box;
+    }
+
+    setInterval(saveState, 4000);
+
+    return { container, photoBox, saveState, saveWork, shareWork, importFile, handlePhoto, addBox };
+  }
+
+  const ctrl1 = createController('layout1', 'cv_editable_autosave_v1', 'photoBox1');
+  const ctrl2 = createController('layout2', 'cv_professional_autosave_v2', 'photoBox2');
+  window.__ctrl1 = ctrl1;
+  window.__ctrl2 = ctrl2;
+  const controllers = { 1: ctrl1, 2: ctrl2 };
+
+  window.addEventListener('beforeunload', function(){ ctrl1.saveState(); ctrl2.saveState(); });
+
+  // ---------- Layout switching ----------
+  let activeLayout = 1;
+  const ddBtn = document.getElementById('layoutDDBtn');
+  const dd = document.getElementById('layoutDD');
+  const ddMenuBtns = dd.querySelectorAll('.menu button');
+
+  function scaleLayout1(){
+    const wrap = layout1El.querySelector('.cv-scale-wrap');
+    const cv = document.getElementById('cvRoot1');
+    if (!wrap || !cv) return;
+    cv.style.transform = 'none';
+    wrap.style.height = 'auto';
+    const availableWidth = wrap.clientWidth;
+    const cvWidth = cv.offsetWidth;
+    const scale = availableWidth / cvWidth;
+    if (scale < 1) {
+      cv.style.transform = 'scale(' + scale + ')';
+      wrap.style.height = (cv.offsetHeight * scale) + 'px';
+    } else {
+      wrap.style.height = cv.offsetHeight + 'px';
+    }
+  }
+
+  function setActiveLayout(n, persist){
+    activeLayout = n;
+
+    if (n === 1) {
+      layout1El.style.display = 'flex';
+      layout2El.style.display = 'none';
+    } else {
+      layout1El.style.display = 'none';
+      layout2El.style.display = 'flex';
+    }
+
+    ddMenuBtns.forEach(function(b){
+      b.classList.toggle('active', Number(b.dataset.layout) === n);
+    });
+
+    if (persist !== false) {
+      try { localStorage.setItem(LAYOUT_KEY, String(n)); } catch(e){}
+    }
+
+    if (n === 1) {
+      setTimeout(scaleLayout1, 10);
+    }
+    dd.classList.remove('open');
+    hideCtrl();
+  }
+
+  ddBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    dd.classList.toggle('open');
+  });
+
+  ddMenuBtns.forEach(function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation();
+      const selectedLayout = Number(this.getAttribute('data-layout'));
+      setActiveLayout(selectedLayout, true);
+    });
+  });
+
+  document.addEventListener('click', function(e){
+    if (!dd.contains(e.target)) dd.classList.remove('open');
+  });
+
+  let savedLayout = 1;
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY);
+    if (raw === '1' || raw === '2') savedLayout = Number(raw);
+  } catch(e){}
+  setActiveLayout(savedLayout, false);
+
+  window.addEventListener('resize', function(){ if (activeLayout === 1) scaleLayout1(); });
+  window.addEventListener('load', function(){ if (activeLayout === 1) scaleLayout1(); });
+
+  // ---------- Shared toolbar dispatch ----------
+  document.getElementById('printBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    window.print();
+  });
+  document.getElementById('photoBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    document.getElementById('photoInput' + activeLayout).click();
+  });
+  document.getElementById('addBoxBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    controllers[activeLayout].addBox();
+  });
+  document.getElementById('saveBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    controllers[activeLayout].saveWork();
+  });
+  document.getElementById('shareBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    controllers[activeLayout].shareWork();
+  });
+  document.getElementById('loadBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    document.getElementById('importInput' + activeLayout).click();
+  });
+
+  document.getElementById('photoInput1').addEventListener('change', function(e){
+    ctrl1.handlePhoto(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('photoInput2').addEventListener('change', function(e){
+    ctrl2.handlePhoto(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('importInput1').addEventListener('change', function(e){
+    ctrl1.importFile(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('importInput2').addEventListener('change', function(e){
+    ctrl2.importFile(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  } catch (fatalErr) {
+    console.error('CV editor init error:', fatalErr);
+  }
+})();
+</script>
+</body>
+</html>
+  
