@@ -47,6 +47,8 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.15);
   }
   .toolbar button:hover { background: #3a4bc0; }
+  .toolbar #resetBtn { background: #d9534f; }
+  .toolbar #resetBtn:hover { background: #b93b37; }
   #addBoxBtn { background: #1e9e63; }
   #addBoxBtn:hover { background: #167a4c; }
 
@@ -271,9 +273,12 @@
   #layout2 .sb-heading .icon { width: 22px; height: 22px; min-width: 22px; border-radius: 50%; background: #1c4d9e; display: flex; align-items: center; justify-content: center; }
   #layout2 .sb-heading .icon svg { display: block; }
   #layout2 .sb-heading h3 { margin: 0; font-size: 13.5px; color: #12305e; font-weight: 700; outline: none; flex: 1; }
-  #layout2 .sidebar p, #layout2 .sidebar div.field { font-size: 13px; margin: 3px 0 8px 26px; color: #22355c; outline: none; min-height: 16px; line-height: 1.5; }
-  #layout2 .row2 { display: flex; font-size: 13px; margin: 3px 0 3px 26px; line-height: 1.5; color: #22355c; }
-  #layout2 .row2 .label { width: 95px; flex-shrink: 0; font-weight: 600; }
+  #layout2 .sidebar p, #layout2 .sidebar div.field {
+    font-size: 14px; margin: 3px 0 10px 0; color: #111; outline: none; min-height: 18px; line-height: 1.5;
+  }
+
+    #layout2 .row2 { display: flex; font-size: 14px; margin: 4px 0; line-height: 1.5; }
+  #layout2 .row2 .label { width: 95px; flex-shrink: 0; }
   #layout2 .row2 .val { outline: none; }
   #layout2 .main { flex: 1; padding: 22px 28px 14px 28px; display: flex; flex-direction: column; position: relative; z-index: 1; overflow: hidden; }
   #layout2 .title { text-align: center; font-size: 26px; letter-spacing: 1px; font-weight: 800; color: #12305e; margin: 0 0 4px 0; outline: none; }
@@ -285,11 +290,13 @@
   #layout2 .email { font-size: 13.5px; color: #1c4d9e; text-decoration: underline; outline: none; }
   #layout2 .section-header { display: flex; align-items: center; gap: 10px; background: linear-gradient(90deg, #d9e8fb 0%, #eef4fd 100%); border-radius: 6px; padding: 6px 12px; margin: 10px 0 6px 0; }
   #layout2 .section-header .icon { width: 24px; height: 24px; min-width: 24px; border-radius: 50%; background: #1c4d9e; display: flex; align-items: center; justify-content: center; }
-  #layout2 .section-header .icon svg { width: 13px; height: 13px; display: block; }
-  #layout2 .section-header h2 { margin: 0; font-size: 14.5px; font-weight: 700; color: #12305e; outline: none; flex: 1; }
-  #layout2 .section-body { font-size: 12.5px; line-height: 1.45; padding: 0 4px 0 34px; outline: none; min-height: 18px; color: #222; }
-  #layout2 .work-item { margin-bottom: 4px; }
-  #layout2 .user-box { margin: 8px 0; }
+  #layout2 .section-header { background: #c9c9f0; padding: 7px 12px; font-size: 16px; font-weight: bold; margin: 22px 0 10px 0; outline: none; }
+
+    #layout2 .section-header h2 { margin: 0; font-size: 14.5px; font-weight: 700; color: #12305e; outline: none; flex: 1; }
+  #layout2 .section-body { font-size: 14.5px; line-height: 1.7; padding: 0 4px; outline: none; min-height: 24px; }
+
+    #layout2 .work-item { margin-bottom: 4px; }
+  #layout2 .user-box { margin: 10px 0; }
 
   #layout2 [contenteditable="true"]:hover { background: rgba(74, 134, 232, 0.15); cursor: text; border-radius: 3px; }
   #layout2 [contenteditable="true"]:focus { background: rgba(74, 134, 232, 0.25); border-radius: 3px; }
@@ -345,6 +352,7 @@
     <button type="button" id="saveBtn" title="Save Work">💾 Save</button>
     <button type="button" id="shareBtn" title="Share Work">📤 Share</button>
     <button type="button" id="loadBtn" title="Load / Import Work">📥 Load</button>
+    <button type="button" id="resetBtn" title="Reset - dono layout default">🔄 Reset</button>
 
     <div class="toolbar-sep"></div>
 
@@ -378,7 +386,7 @@
   <div class="cv" id="cvRoot1">
     <div class="sidebar">
       <div class="photo-box" id="photoBox1">
-        <span class="placeholder">Click karke<br>photo lagayein</span>
+        <span class="placeholder"> Please<br>upload photo</span>
       </div>
 
       <h3 contenteditable="true">Contact details</h3>
@@ -401,7 +409,7 @@
       <div class="field" contenteditable="true">At- Bara Sonakar</div>
       <div class="field" contenteditable="true">Post- Kotal Pokhar</div>
       <div class="field" contenteditable="true">P.S - Kotal Pokhar</div>
-      <div class="field" contenteditable="true">Dist- Sahibganj (Jharkhand)</div>
+      <div class="field" contenteditable="true">Dist- Sahebganj (Jharkhand)</div>
       <div class="field" contenteditable="true">Pin - 816105</div>
       <div style="flex:1"></div>
     </div>
@@ -424,10 +432,10 @@
       <div class="section-body" contenteditable="true">Garnishing of 3D work</div>
 
       <div class="section-header" contenteditable="true">Work Experience</div>
-      <div class="section-body" contenteditable="true">1) Working at Company in Mumbai as a Commi - I from 29.12.24 to till date<br><br>
-2) Worked at Company in Mumbai as a Cake &amp; Pastry Commi - I from 17.11.2022 to 13.10.2024.<br><br>
-3) Worked at Company in Mumbai  as a Cake &amp; Pastry Commi - II from 13.11.2020 to 07.11.2022.<br><br>
-4) Worked at Company in Mumbai a Cake &amp; Pastry Commi - III from 07.01.2020 to 20.10.2020.</div>
+      <div class="section-body" contenteditable="true">1) Working at Company Name in Mumbai as a Commi - I from 29.12.24 to till date<br><br>
+2) Worked at Company Name in Mumbai as a Cake &amp; Pastry Commi - I from 17.11.2022 to 13.10.2024.<br><br>
+3) Worked at Company Name in  Mumbai as a Cake &amp; Pastry Commi - II from 13.11.2020 to 07.11.2022.<br><br>
+4) Worked at Company Name in  Mumbai a Cake &amp; Pastry Commi - III from 07.01.2020 to 20.10.2020.</div>
 
       <div class="section-header" contenteditable="true">Declaration</div>
       <div class="section-body" contenteditable="true">I hereby declare that all the above mentioned information is true to the best of my knowledge and belief.</div>
@@ -457,7 +465,8 @@
 
     <div class="sidebar">
       <div class="photo-box" id="photoBox2">
-        <span class="placeholder">Click karke<br>photo lagayein</span>
+        <span class="placeholder"> Please<br>upload photo</span>
+
       </div>
 
       <div class="sb-heading"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.8 21 3 13.2 3 3c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg></span><h3 contenteditable="true">Contact details</h3></div>
@@ -480,8 +489,8 @@
       <div class="field" contenteditable="true">At- Bara Sonakar</div>
       <div class="field" style="margin-top:-6px" contenteditable="true">Post- Kotal Pokhar</div>
       <div class="field" style="margin-top:-6px" contenteditable="true">P.S - Kotal Pokhar</div>
-      <div class="field" style="margin-top:-6px" contenteditable="true">Dist- Sahibganj (Jharkhand)</div>
-      <div class="field" style="margin-top:-6px" contenteditable="true">Pin - 816105</div>
+      <div class="field" style="margin-top:-6px" contenteditable="true">Dist- Sahebganj (Jharkhand)</div>
+      <div class="field" style="margin-top:-6px" contenteditable="true">Pin - 816104</div>
       <div style="flex:1"></div>
     </div>
 
@@ -507,17 +516,17 @@
 
       <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M20.7 13.3l-1.4 1.4-6.3-6.3 1.4-1.4c.4-.4.4-1 0-1.4l-1.9-1.9c-.4-.4-1-.4-1.4 0L9.7 5.1 8.3 3.7c-.4-.4-1-.4-1.4 0L5.5 5.1c-.4.4-.4 1 0 1.4l1.4 1.4-4.2 4.2c-.4.4-.4 1 0 1.4l1.9 1.9c.4.4 1 .4 1.4 0l4.2-4.2 6.3 6.3-1.4 1.4c-.4.4-.4 1 0 1.4l1.9 1.9c.4.4 1 .4 1.4 0l4.2-4.2c.4-.4.4-1 0-1.4l-1.9-1.9c-.4-.4-1-.4-1.4 0z"/></svg></span><h2 contenteditable="true">Work Experience</h2></div>
       <div class="section-body" contenteditable="true">
-        <div class="work-item">1) Working at Company in Mumbai as a Commi - I from 29.12.24 to till date.</div>
-        <div class="work-item">2) Worked at Company in Mumbai as a Cake &amp; Pastry Commi - I from 17.11.2022 to 13.10.2024.</div>
-        <div class="work-item">3) Worked at Company in Mumbai  as a Cake &amp; Pastry Commi - II from 13.11.2020 to 07.11.2022.</div>
-        <div class="work-item">4) Worked at Company in Mumbra Mumbai as a Cake &amp; Pastry Commi - III from 07.01.2020 to 20.10.2020.</div>
+        <div class="work-item">1) Working at Company Name in Mumbai as a Commi - I from 29.12.24 to till date<br><br>
+2) Worked at Company Name in Mumbai as a Cake &amp; Pastry Commi - I from 17.11.2022 to 13.10.2024.<br><br>
+3) Worked at Company Name in  Mumbai as a Cake &amp; Pastry Commi - II from 13.11.2020 to 07.11.2022.<br><br>
+4) Worked at Company Name in  Mumbai a Cake &amp; Pastry Commi - III from 07.01.2020 to 20.10.2020.</div>
       </div>
 
       <div class="section-header"><span class="icon"><svg viewBox="0 0 24 24" width="13" height="13" style="fill:#ffffff;"><path d="M19 3h-4.2C14.4 1.8 13.3 1 12 1s-2.4.8-2.8 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.6 0 1 .4 1 1s-.4 1-1 1-1-.4-1-1 .4-1 1-1zm7 16H5V5h2v3h10V5h2v14z"/></svg></span><h2 contenteditable="true">Declaration</h2></div>
       <div class="section-body" contenteditable="true">I hereby declare that all the above mentioned information is true to the best of my knowledge and belief.</div>
 
       <div class="section-body" style="margin-top:16px; padding-left:4px;" contenteditable="true">Place : MUMBAI</div>
-      <div class="section-body" style="text-align:right; font-weight:600;" contenteditable="true">(MD. NAME)</div>
+      <div class="section-body" style="text-align:right;" contenteditable="true">(MD. NAME)</div>
       <div style="flex:1"></div>
     </div>
   </div>
@@ -535,6 +544,71 @@
 
   const layout1El = document.getElementById('layout1');
   const layout2El = document.getElementById('layout2');
+
+  // ---------- Live sync (text + photo) between both layouts ----------
+  const PHOTO_KEY = 'cv_photo_shared_v1';
+
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function toLines(root){
+    const out = []; let cur = null;
+    function text(t){
+      t = t.replace(/[\r\n]+\s*/g, ' ');
+      if (cur === null) { t = t.replace(/^\s+/, ''); if (t === '') return; cur = ''; }
+      cur += t;
+    }
+    function brk(){ out.push(cur === null ? '' : cur); cur = null; }
+    function walk(n){
+      n.childNodes.forEach(function(ch){
+        if (ch.nodeType === 3) text(ch.nodeValue);
+        else if (ch.nodeName === 'BR') brk();
+        else if (ch.nodeType === 1) {
+          const blk = /^(DIV|P|LI|H[1-6])$/.test(ch.nodeName);
+          if (blk && cur !== null) brk();
+          walk(ch);
+          if (blk && cur !== null) brk();
+        }
+      });
+    }
+    walk(root);
+    if (cur !== null) out.push(cur);
+    return out;
+  }
+
+  function renderLines(el, lines){
+    const fmt = el.dataset.fmt || 'br';
+    let L = lines.slice();
+    if (fmt === 'items' || fmt === 'br2') L = L.filter(function(x){ return x.trim() !== ''; });
+    else { while (L.length && L[L.length-1].trim() === '') L.pop(); }
+    if (fmt === 'items') el.innerHTML = L.map(function(x){ return '<div class="work-item">' + escHtml(x) + '</div>'; }).join('');
+    else if (fmt === 'br2') el.innerHTML = L.map(escHtml).join('<br><br>');
+    else el.innerHTML = L.map(escHtml).join('<br>');
+  }
+
+  function tagPristine(container){
+    container.querySelectorAll('[contenteditable="true"]').forEach(function(el, i){
+      el.dataset.sk = 's' + i;
+      if (el.querySelector(':scope > .work-item')) el.dataset.fmt = 'items';
+      else if (/<br\s*\/?>\s*<br/i.test(el.innerHTML)) el.dataset.fmt = 'br2';
+      else el.dataset.fmt = 'br';
+    });
+  }
+
+  function tagBox(box, bid){
+    box.dataset.bid = bid;
+    box.querySelectorAll('[contenteditable="true"]').forEach(function(e, j){
+      e.dataset.sk = 'b' + bid + '_' + j;
+      e.dataset.fmt = 'br';
+    });
+  }
+
+  tagPristine(layout1El);
+  tagPristine(layout2El);
+  // identical default text in both layouts (layout 2 text is the master default)
+  layout2El.querySelectorAll('[data-sk]').forEach(function(el){
+    const t = layout1El.querySelector('[data-sk="' + el.dataset.sk + '"]');
+    if (t) renderLines(t, toLines(el));
+  });
 
   // ---------- Margin / selection / delete control (shared) ----------
   const ctrlEl = document.getElementById('marginCtrl');
@@ -623,7 +697,15 @@
       }
     }
     const c = activeCtrl;
+    const bid = activeEl.classList.contains('user-box') ? activeEl.dataset.bid : null;
     toRemove.forEach(function(el){ el.remove(); });
+    if (bid) {
+      const oc = (c === 'ctrl1') ? layout2El : layout1El;
+      const ob = oc.querySelector('.user-box[data-bid="' + bid + '"]');
+      if (ob) ob.remove();
+      if (window.__ctrl1) window.__ctrl1.saveState();
+      if (window.__ctrl2) window.__ctrl2.saveState();
+    }
     hideCtrl();
     if (c === 'ctrl1' && window.__ctrl1) window.__ctrl1.saveState();
     if (c === 'ctrl2' && window.__ctrl2) window.__ctrl2.saveState();
@@ -719,285 +801,12 @@
         if (mainEl) {
           mainEl.querySelectorAll(':scope > .user-box').forEach(function(b){ b.remove(); });
           if (Array.isArray(data['__extraBoxes'])) {
-            data['__extraBoxes'].forEach(function(item){
+            data['__extraBoxes'].forEach(function(item, idx){
               const box = createBoxNode();
               insertBox(box);
               if (item.html) box.innerHTML = item.html;
+              tagBox(box, 'x' + idx);
               if (item.marginTop) box.style.marginTop = item.marginTop;
               if (item.bg) box.style.backgroundColor = item.bg;
               attachBoxListeners(box);
-            });
-          }
-        }
-      } catch(err) {}
-
-      editableEls().forEach(function(el, i){
-        if (!el.dataset.saveId) el.dataset.saveId = 'el' + i;
-        const saved = data[el.dataset.saveId];
-        if (saved) {
-          if (typeof saved.html === 'string') el.innerHTML = saved.html;
-          if (saved.marginTop) el.style.marginTop = saved.marginTop;
-          if (saved.bg) el.style.backgroundColor = saved.bg;
-        }
-      });
-      const groupEls = container.querySelectorAll('.sb-heading, .section-header, .row2, .field');
-      groupEls.forEach(function(el, i){
-        if (!el.dataset.groupId) el.dataset.groupId = 'grp' + i;
-        const saved = data['__grp_' + el.dataset.groupId];
-        if (saved) {
-          if (saved.marginTop) el.style.marginTop = saved.marginTop;
-          if (saved.bg) el.style.backgroundColor = saved.bg;
-        }
-      });
-      if (data['__photoMargin']) photoBox.style.marginTop = data['__photoMargin'];
-      if (data['__photo']) {
-        photoBox.innerHTML = '<img src="' + data['__photo'] + '" alt="Photo">';
-        if (data['__photoMargin']) photoBox.style.marginTop = data['__photoMargin'];
-      }
-    }
-
-    function createBoxNode(){
-      const box = document.createElement('div');
-      box.className = 'user-box';
-      box.innerHTML =
-        '<div class="section-header" contenteditable="true">New Heading</div>' +
-        '<div class="section-body" contenteditable="true">Yahan apna text likhein...</div>';
-      return box;
-    }
-
-    function insertBox(box){
-      const mainEl = container.querySelector('.main');
-      if (!mainEl) return;
-      const spacer = mainEl.querySelector(':scope > div[style*="flex:1"]');
-      if (spacer) mainEl.insertBefore(box, spacer); else mainEl.appendChild(box);
-    }
-
-    function attachBoxListeners(box){
-      attachSelectable(box);
-      box.querySelectorAll('[contenteditable="true"]').forEach(function(el){
-        attachSelectable(el);
-        el.addEventListener('input', saveState);
-        el.addEventListener('blur', saveState);
-      });
-    }
-
-    function saveState(){
-      const data = collectData(true);
-      try { localStorage.setItem(storageKey, JSON.stringify(data)); } catch(e){}
-    }
-
-    function restoreState(){
-      let raw;
-      try { raw = localStorage.getItem(storageKey); } catch(e){ return; }
-      if (!raw) return;
-      let data;
-      try { data = JSON.parse(raw); } catch(e){ return; }
-      try { applyData(data); } catch(e){}
-    }
-
-    try { restoreState(); } catch(e){}
-
-    editableEls().forEach(function(el){
-      attachSelectable(el);
-      el.addEventListener('input', saveState);
-      el.addEventListener('blur', saveState);
-    });
-    attachSelectable(photoBox);
-
-    function saveWork(){
-      saveState();
-      alert('Work save ho gaya! ✅');
-    }
-
-    async function shareWork(){
-      const data = collectData(false);
-      const jsonStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const file = new File([blob], 'cv-work.json', { type: 'application/json' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: 'CV Work File', text: 'Mera CV data file (cv-work.json) - isko CV editor mein import karo.' });
-          return;
-        } catch(e){}
-      }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'cv-work.json';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    function importFile(file){
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        try {
-          const data = JSON.parse(ev.target.result);
-          applyData(data);
-          saveState();
-          alert('Work import ho gaya! ✅');
-        } catch(err){
-          alert('Yeh file valid nahi hai. Sahi cv-work.json file chunein.');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function handlePhoto(file){
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        photoBox.innerHTML = '<img src="' + ev.target.result + '" alt="Photo">';
-        saveState();
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function addBox(){
-      const box = createBoxNode();
-      insertBox(box);
-      attachBoxListeners(box);
-      saveState();
-      return box;
-    }
-
-    setInterval(saveState, 4000);
-
-    return { container, photoBox, saveState, saveWork, shareWork, importFile, handlePhoto, addBox };
-  }
-
-  const ctrl1 = createController('layout1', 'cv_editable_autosave_v1', 'photoBox1');
-  const ctrl2 = createController('layout2', 'cv_professional_autosave_v2', 'photoBox2');
-  window.__ctrl1 = ctrl1;
-  window.__ctrl2 = ctrl2;
-  const controllers = { 1: ctrl1, 2: ctrl2 };
-
-  window.addEventListener('beforeunload', function(){ ctrl1.saveState(); ctrl2.saveState(); });
-
-  // ---------- Layout switching ----------
-  let activeLayout = 1;
-  const ddBtn = document.getElementById('layoutDDBtn');
-  const dd = document.getElementById('layoutDD');
-  const ddMenuBtns = dd.querySelectorAll('.menu button');
-
-  function scaleLayout1(){
-    const wrap = layout1El.querySelector('.cv-scale-wrap');
-    const cv = document.getElementById('cvRoot1');
-    if (!wrap || !cv) return;
-    cv.style.transform = 'none';
-    wrap.style.height = 'auto';
-    const availableWidth = wrap.clientWidth;
-    const cvWidth = cv.offsetWidth;
-    const scale = availableWidth / cvWidth;
-    if (scale < 1) {
-      cv.style.transform = 'scale(' + scale + ')';
-      wrap.style.height = (cv.offsetHeight * scale) + 'px';
-    } else {
-      wrap.style.height = cv.offsetHeight + 'px';
-    }
-  }
-
-  function setActiveLayout(n, persist){
-    activeLayout = n;
-
-    if (n === 1) {
-      layout1El.style.display = 'flex';
-      layout2El.style.display = 'none';
-    } else {
-      layout1El.style.display = 'none';
-      layout2El.style.display = 'flex';
-    }
-
-    ddMenuBtns.forEach(function(b){
-      b.classList.toggle('active', Number(b.dataset.layout) === n);
-    });
-
-    if (persist !== false) {
-      try { localStorage.setItem(LAYOUT_KEY, String(n)); } catch(e){}
-    }
-
-    if (n === 1) {
-      setTimeout(scaleLayout1, 10);
-    }
-    dd.classList.remove('open');
-    hideCtrl();
-  }
-
-  ddBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    dd.classList.toggle('open');
-  });
-
-  ddMenuBtns.forEach(function(b){
-    b.addEventListener('click', function(e){
-      e.stopPropagation();
-      const selectedLayout = Number(this.getAttribute('data-layout'));
-      setActiveLayout(selectedLayout, true);
-    });
-  });
-
-  document.addEventListener('click', function(e){
-    if (!dd.contains(e.target)) dd.classList.remove('open');
-  });
-
-  let savedLayout = 1;
-  try {
-    const raw = localStorage.getItem(LAYOUT_KEY);
-    if (raw === '1' || raw === '2') savedLayout = Number(raw);
-  } catch(e){}
-  setActiveLayout(savedLayout, false);
-
-  window.addEventListener('resize', function(){ if (activeLayout === 1) scaleLayout1(); });
-  window.addEventListener('afterprint', function(){ if (activeLayout === 1) setTimeout(scaleLayout1, 50); });
-  window.addEventListener('load', function(){ if (activeLayout === 1) scaleLayout1(); });
-
-  // ---------- Shared toolbar dispatch ----------
-  document.getElementById('printBtn').addEventListener('click', function(e){
-    e.preventDefault();
-    window.print();
-  });
-  document.getElementById('photoBtn').addEventListener('click', function(e){
-    e.preventDefault();
-    document.getElementById('photoInput' + activeLayout).click();
-  });
-  document.getElementById('addBoxBtn').addEventListener('click', function(e){
-    e.preventDefault();
-    controllers[activeLayout].addBox();
-  });
-  document.getElementById('saveBtn').addEventListener('click', function(e){
-    e.preventDefault();
-    controllers[activeLayout].saveWork();
-  });
-  document.getElementById('shareBtn').addEventListener('click', function(e){
-    e.preventDefault();
-    controllers[activeLayout].shareWork();
-  });
-  document.getElementById('loadBtn').addEventListener('click', function(e){
-    e.preventDefault();
-    document.getElementById('importInput' + activeLayout).click();
-  });
-
-  document.getElementById('photoInput1').addEventListener('change', function(e){
-    ctrl1.handlePhoto(e.target.files[0]);
-    e.target.value = '';
-  });
-  document.getElementById('photoInput2').addEventListener('change', function(e){
-    ctrl2.handlePhoto(e.target.files[0]);
-    e.target.value = '';
-  });
-  document.getElementById('importInput1').addEventListener('change', function(e){
-    ctrl1.importFile(e.target.files[0]);
-    e.target.value = '';
-  });
-  document.getElementById('importInput2').addEventListener('change', function(e){
-    ctrl2.importFile(e.target.files[0]);
-    e.target.value = '';
-  });
-
-  } catch (fatalErr) {
-    console.error('CV editor init error:', fatalErr);
-  }
-})();
-</script>
-</body>
-</html>
+            }
