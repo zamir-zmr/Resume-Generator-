@@ -133,7 +133,8 @@
   .layout-dd .menu button:hover, .tool-dd .menu button:hover { background: #eef1ff; transform: none; box-shadow: none; }
   .layout-dd .menu button.active, .tool-dd .menu button.active { font-weight: bold; color: #4a5fd9; background: #f3f5ff; }
   .tool-dd .menu .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.2); flex: 0 0 auto; }
-  .tool-dd .menu { max-height: 60vh; overflow-y: auto; }
+  .tool-dd .menu, .layout-dd .menu { max-height: 60vh; overflow-y: auto; }
+  .layout-dd .menu .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.2); flex: 0 0 auto; }
 
   /* ---------- Zoom / status chips ---------- */
   .zoom-label { min-width: 46px; text-align: center; font-size: 12px; font-weight: bold; color: #2b3170; user-select: none; }
@@ -1409,17 +1410,79 @@
     playTimer = setTimeout(function(){ container.classList.remove('play'); }, 1900);
   }
 
+
+  // ===== Layouts 3-20 (skins on the shared editable CV, so text/photo/boxes/PDF all stay in sync) =====
+  const SK = [
+    ['Navy Pro','r',32,'#1f2a44','#fff','#1f2a44','line','','none','left'],
+    ['Emerald Bar','l',32,'#e6f4ec','#12351f','#1b7a4b','bar','','stripe','left'],
+    ['Charcoal Dark','l',34,'#2b2f36','#fff','#2b2f36','fill','#e9ecf1','band','center'],
+    ['Rose Pill','l',32,'#fbe4ea','#4a1030','#c2185b','pill','#f9d3de','none','center'],
+    ['Gold Executive','l',31,'#f7efd9','#3b2a00','#9a6b00','caps','','frame','center'],
+    ['Teal Tag','r',32,'#d9f1f1','#05363f','#0b7285','tag','','none','left'],
+    ['Minimal Mono','l',30,'#ffffff','#111','#111111','caps','','stripe','left'],
+    ['Crimson Corner','r',33,'#7b1e2b','#fff','#7b1e2b','box','','corner','center'],
+    ['Sky Wide','l',38,'#e3f0ff','#0d2f57','#1769c2','fill','#cfe5ff','band','center'],
+    ['Violet Modern','l',32,'#ece4fb','#2a1257','#6a2fc0','tag','','foot','left'],
+    ['Forest Dark','r',32,'#1e3d2f','#fff','#1e3d2f','bar','','none','center'],
+    ['Sunset Pill','l',32,'#fff0e1','#4a2200','#e8590c','pill','#ffd8b5','band','center'],
+    ['Slate Corporate','r',26,'#eef1f5','#1d2b3a','#334e68','fill','#dde4ec','stripe','left'],
+    ['Mint Dotted','l',27,'#e8fbf2','#0b3b2a','#12805c','under','','corner','center'],
+    ['Indigo Bold','l',33,'#3730a3','#fff','#3730a3','fill','#e0e7ff','foot','left'],
+    ['Peach Elegant','r',32,'#fde8e0','#4a1f0e','#b4532a','caps','','frame','center'],
+    ['Ocean Deep','l',32,'#0f4c5c','#fff','#0f4c5c','tag','','band','left'],
+    ['Classic B&W','l',32,'#f2f2f2','#111','#111111','box','','stripe','center']
+  ];
+  const TOTAL = 2 + SK.length;
+  (function buildSkins(){
+    const HD = {
+      fill:  function(a,h){ return 'background:'+h+';color:'+a+';padding:7px 12px;'; },
+      line:  function(a){ return 'background:none;border-bottom:2px solid '+a+';padding:4px 0;color:'+a+';'; },
+      bar:   function(a){ return 'background:none;border-left:5px solid '+a+';padding:4px 10px;color:'+a+';'; },
+      pill:  function(a,h){ return 'background:'+h+';color:'+a+';border-radius:999px;padding:6px 18px;'; },
+      box:   function(a){ return 'background:none;border:2px solid '+a+';color:'+a+';padding:5px 12px;'; },
+      caps:  function(a){ return 'background:none;border-bottom:1px solid #bbb;color:'+a+';text-transform:uppercase;letter-spacing:2px;font-size:13px;padding:3px 0;'; },
+      tag:   function(a){ return 'background:'+a+';color:#fff;border-radius:0 18px 18px 0;padding:6px 20px 6px 12px;'; },
+      under: function(a){ return 'background:none;border-bottom:2px dotted '+a+';color:'+a+';padding:4px 0;'; }
+    };
+    let css = '#layout1.sk .sidebar,#layout1.sk .main{position:relative;z-index:1;}';
+    SK.forEach(function(k, i){
+      const n = i + 3, S = '#layout1.sk-' + n + ' ';
+      const side = k[1], w = k[2], bg = k[3], fg = k[4], a = k[5], hd = k[6], hb = k[7], deco = k[8], ta = k[9];
+      const dark = (fg === '#fff');
+      const edge = (deco === 'stripe') ? ('border-' + (side === 'r' ? 'left' : 'right') + ':6px solid ' + a + ';') : '';
+      css += S + '.cv{' + (side === 'r' ? 'flex-direction:row-reverse;' : '') + 'border:' + (deco === 'frame' ? '7px solid ' + a : 'none') + ';}';
+      css += S + '.sidebar{width:' + w + '%;background:' + bg + ';border:none;' + edge + '}';
+      css += S + '.sidebar h3,' + S + '.sidebar .field,' + S + '.sidebar .row2{color:' + fg + ';}';
+      css += S + '.sidebar h3{border-bottom:1px solid ' + (dark ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.18)') + ';padding-bottom:3px;}';
+      css += S + '.photo-box{border:3px solid ' + (dark ? '#fff' : a) + ';}';
+      css += S + '.title,' + S + '.name,' + S + '.email{text-align:' + ta + ';}';
+      css += S + '.title,' + S + '.email{color:' + a + ';}';
+      css += S + '.section-header{' + HD[hd](a, hb) + '}';
+      if (deco === 'band')   css += S + '.cv::before{content:"";position:absolute;left:0;right:0;top:0;height:10px;background:' + a + ';z-index:2;}';
+      if (deco === 'foot')   css += S + '.cv::before{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:' + a + ';z-index:2;}';
+      if (deco === 'corner') css += S + '.cv::after{content:"";position:absolute;right:0;top:0;border-top:80px solid ' + a + ';border-left:80px solid transparent;z-index:2;}';
+    });
+    const st = document.createElement('style');
+    st.textContent = css;
+    document.head.appendChild(st);
+  })();
+
   function setLayout(n, animate){
-    n = (n === 2) ? 2 : 1;
+    n = parseInt(n, 10);
+    if (!(n >= 1 && n <= TOTAL)) n = 1;
+    const base = (n === 2) ? 2 : 1;
     state.layout = n;
-    window.__activeLayout = n;
-    layout1El.style.display = (n === 1) ? '' : 'none';
-    layout2El.style.display = (n === 2) ? '' : 'none';
+    window.__activeLayout = base;
+    layout1El.style.display = (base === 1) ? '' : 'none';
+    layout2El.style.display = (base === 2) ? '' : 'none';
+    Array.prototype.slice.call(layout1El.classList).forEach(function(c){ if (c === 'sk' || c.indexOf('sk-') === 0) layout1El.classList.remove(c); });
+    if (n > 2) layout1El.classList.add('sk', 'sk-' + n);
+    $('layoutDDBtn').innerHTML = ' Layout ' + n + ' &#9662;';
     markActive('layoutMenu', 'data-layout', String(n));
     LS.set(KEYS.layout, String(n));
     hideCtrl();
     fit();
-    if (animate) playIntro(n === 1 ? layout1El : layout2El);
+    if (animate) playIntro(base === 1 ? layout1El : layout2El);
     updateStatus();
   }
 
@@ -1444,6 +1507,7 @@
   });
   document.addEventListener('click', function(){ closeAllDD(); });
 
+  (function(){ const m = $('layoutMenu'); SK.forEach(function(k, i){ const b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-layout', i + 3); b.innerHTML = '<span class="dot" style="background:' + k[5] + '"></span>Layout ' + (i + 3) + ' &middot; ' + k[0]; m.appendChild(b); }); })();
   document.querySelectorAll('#layoutMenu button').forEach(function(b){
     b.addEventListener('click', function(e){
       e.stopPropagation();
@@ -1516,7 +1580,7 @@
     if (pdfBusy) return;
     pdfBusy = true;
     hideCtrl();
-    const n = state.layout;
+    const n = state.layout === 2 ? 2 : 1;
     toast('PDF ban rahi hai… thoda ruko', '', 7000);
     try {
       await loadPdfLibs();
@@ -1591,7 +1655,7 @@
     if (obj.shape) applyShape(obj.shape);
     savePrefs();
     saveAll();
-    if (obj.layout) setLayout(obj.layout === 2 ? 2 : 1, true);
+    if (obj.layout) setLayout(obj.layout, true);
     updateStatus();
   }
 
@@ -1627,7 +1691,7 @@
   });
 
   $('loadBtn').addEventListener('click', function(){
-    const inp = $('importInput' + state.layout);
+    const inp = $('importInput' + (state.layout === 2 ? 2 : 1));
     if (inp) { inp.value = ''; inp.click(); }
   });
   ['importInput1', 'importInput2'].forEach(function(id){
@@ -1683,7 +1747,7 @@
 
     // layout
     const saved = parseInt(LS.get(KEYS.layout) || '1', 10);
-    setLayout(saved === 2 ? 2 : 1, true);
+    setLayout(saved || 1, true);
     setTimeout(function(){ measureA4(); fit(); updateStatus(); }, 200);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measureA4(); fit(); updateStatus(); });
   })();
