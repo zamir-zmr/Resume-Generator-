@@ -1644,7 +1644,23 @@
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
       pdf.setProperties({ title: fileBase().replace(/_/g, ' '), subject: 'Curriculum Vitae', creator: 'CV Builder' });
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
-      pdf.save(fileBase() + '.pdf');
+      const pdfOutput = pdf.output('blob');
+      const fileName = fileBase() + '.pdf';
+      
+      // Try Base64 / Data URI download for WebView compatibility
+      const reader = new FileReader();
+      reader.readAsDataURL(pdfOutput);
+      reader.onloadend = function() {
+        const base64data = reader.result;
+        const a = document.createElement('a');
+        a.href = base64data;
+        a.download = fileName;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() { document.body.removeChild(a); }, 500);
+      };
+      
       toast('PDF download ho gayi ✔', 'ok', 2500);
     } catch(err) {
       console.error(err);
