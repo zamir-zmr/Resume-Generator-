@@ -1644,24 +1644,8 @@
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
       pdf.setProperties({ title: fileBase().replace(/_/g, ' '), subject: 'Curriculum Vitae', creator: 'CV Builder' });
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
-      const pdfBase64 = pdf.output('datauristring');
-      const fileName = fileBase() + '.pdf';
-
-      // 1. Send Base64 data directly to Kodular WebViewString
-      if (window.AppInventor && window.AppInventor.setWebViewString) {
-        window.AppInventor.setWebViewString(pdfBase64);
-      }
-
-      // 2. Also trigger standard anchor click fallback (for Base64/Data URL)
-      const a = document.createElement('a');
-      a.href = pdfBase64;
-      a.download = fileName;
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function() { document.body.removeChild(a); }, 500);
-
-      toast('PDF Data WebViewString me bhej diya gaya ✔', 'ok', 2500);
+      pdf.save(fileBase() + '.pdf');
+      toast('PDF download ho gayi ✔', 'ok', 2500);
     } catch(err) {
       console.error(err);
       toast('PDF library load nahi hui (internet check karein) — Print se PDF save karein', 'err', 3800);
