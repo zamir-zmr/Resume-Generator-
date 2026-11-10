@@ -1,1 +1,8 @@
-a
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.zmrresumemaker",
+        "sha256_cert_fingerprints": ["A5:A4:88:1D:EA:3F:C0:C6:1D:F4:6F:90:5E:28:9C:C7:FC:95:21:46:2B:83:08:DE:5B:B9:44:63:7E:12:39:C4"]
+      }
+    }]
