@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="theme-color" content="#4a5fd9">
+<meta name="theme-color" content="#2b3170">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -11,7 +11,7 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#4a5fd9;color:#fff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
-#ashSplash{z-index:2;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#4a5fd9,#3949ab 60%,#283593);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;transition:opacity .6s}
+#ashSplash{z-index:2;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#4a5fd9,#3a4bc0 60%,#1e2878);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;transition:opacity .6s}
 #ashSplash.hide{opacity:0;pointer-events:none}
 .ash-stage{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center}
 .ash-ring{position:absolute;top:0;left:0;right:0;bottom:0;border-radius:50%;border:3px solid rgba(255,255,255,.75);animation:ring 2.4s ease-out infinite}
@@ -30,7 +30,7 @@ html,body{margin:0;height:100%;background:#4a5fd9;color:#fff;font-family:system-
 .ash-bar.stop{background:#EF4444}.ash-bar.stop i{display:none}
 .fl{position:absolute;font-size:34px;opacity:0;animation:up 5s linear infinite}
 @keyframes up{0%{transform:translateY(40px) rotate(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-110vh) rotate(25deg);opacity:0}}
-#appFrame{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;width:100%;height:100%;border:0;background:#e3e6f6}
+#appFrame{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;width:100%;height:100%;border:0;background:#4a5fd9}
 #msg{position:relative;min-height:20px;font-size:14px;color:#fff;max-width:320px;line-height:1.5}
 #msg code{color:#ffeb00}
 #actions{position:relative;display:none;gap:10px}
@@ -40,10 +40,10 @@ html,body{margin:0;height:100%;background:#4a5fd9;color:#fff;font-family:system-
 </head>
 <body>
 <div id="ashSplash">
-  <span class="fl" style="left:8%;animation-delay:0s">📄</span><span class="fl" style="left:25%;animation-delay:1.2s">✏️</span><span class="fl" style="left:45%;animation-delay:2.4s">📑</span><span class="fl" style="left:65%;animation-delay:.6s">📤</span><span class="fl" style="left:82%;animation-delay:1.8s">🎓</span><span class="fl" style="left:35%;animation-delay:3.2s">✅</span>
-  <div class="ash-stage"><i class="ash-ring"></i><i class="ash-ring r2"></i><img class="ash-logo" src="icon-192.png" alt="Resume" width="110" height="110"></div>
+  <span class="fl" style="left:8%;animation-delay:0s">📄</span><span class="fl" style="left:25%;animation-delay:1.2s">✍️</span><span class="fl" style="left:45%;animation-delay:2.4s">💼</span><span class="fl" style="left:65%;animation-delay:.6s">🎓</span><span class="fl" style="left:82%;animation-delay:1.8s">📝</span><span class="fl" style="left:35%;animation-delay:3.2s">👔</span>
+  <div class="ash-stage"><i class="ash-ring"></i><i class="ash-ring r2"></i><img class="ash-logo" src="icon-192.png" alt="Resume Maker" width="110" height="110"></div>
   <div class="ash-name">RESUME MAKER</div>
-  <div class="ash-sub">CREATE · EDIT · SHARE</div>
+  <div class="ash-sub">CREATE · EDIT · DOWNLOAD</div>
   <div class="ash-bar" id="bar"><i></i></div>
   <div id="msg"></div>
   <div id="actions"><button id="retryBtn">Retry</button><button id="cachedBtn" class="alt" style="display:none">Open last link</button></div>
@@ -99,7 +99,7 @@ function mount(url){
   let f = $('appFrame');
   if (!f){
     f = document.createElement('iframe'); f.id = 'appFrame'; f.title = 'Resume Maker';
-    f.setAttribute('allow', 'camera *; microphone *; fullscreen *; geolocation *; clipboard-write *; autoplay *');
+    f.setAttribute('allow', 'camera *; web-share *; clipboard-read *; downloads *; microphone *; fullscreen *; geolocation *; clipboard-write *; autoplay *');
     f.setAttribute('allowfullscreen', '');
     f.onload = hideSplash; document.body.appendChild(f); setTimeout(hideSplash, 10000);
   }

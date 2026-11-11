@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <meta name="theme-color" content="#e3e6f6">
-<title>Curriculum Vitae - Editable</title>
+<title>Resume Maker</title>
 <style>
   :root { --cv-scale: 1; --fs: 1; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; -webkit-tap-highlight-color: transparent; }
@@ -426,10 +426,6 @@
     [contenteditable]:hover, [contenteditable]:focus { background: transparent !important; }
   }
 </style>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
-<style>@media print{.pp-link{display:none!important}}</style>
 </head>
 <body>
 <div class="wrap">
@@ -1802,7 +1798,7 @@
   }
 })();
 </script>
-<p class="pp-link" style="text-align:center;font-size:12px;margin:14px 0 6px"><a href="privacy-policy.html" target="_blank" style="color:#4a5fd9">Privacy Policy</a></p>
-<script>if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});</script>
+<div id="appFooter" style="width:100%;max-width:210mm;text-align:center;padding:14px 0 24px;font-size:12px;color:#5a608f"><a href="privacy-policy.html" target="_blank" rel="noopener" style="color:#4a5fd9;text-decoration:underline">Privacy Policy</a> &middot; Resume Maker &middot; ZmrAppStudio</div>
+<style>@media print{#appFooter{display:none!important}}</style>
 </body>
 </html>
