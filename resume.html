@@ -1776,7 +1776,7 @@
       const b64 = uri.slice(uri.indexOf('base64,') + 7);
       br.setWebViewString('pdf|' + mode + '|' + fileBase() + '.pdf|' + b64);
       toast(mode === 'print' ? 'Share sheet mein "Print" chunein' : mode === 'share' ? 'Share sheet khul rahi hai…' : 'Share sheet mein "Files / Drive / Save" chunein', 'ok', 3500);
-      guard(4500, function(){ toast('PDF app tak nahi pahunchi — Kodular blocks / Base64 extension check karein', 'err', 4500); });
+      guard(5000, function(){ toast('Share sheet nahi khuli? Kodular mein pdf| block ke baad Sharing1.ShareFile lagayein', '', 5000); });
     } catch(err){
       console.error(err);
       toast('PDF ban nahi payi (internet check karein)', 'err', 3500);
