@@ -1648,7 +1648,7 @@
     toast('PDF ban rahi hai… thoda ruko', '', 7000);
     try {
       const pdf = await buildPdf();
-      pdf.save(fileBase() + '.pdf');
+      downloadBlob(pdf.output('blob'), fileBase() + '.pdf');
       toast('PDF download ho gayi ✔', 'ok', 2500);
     } catch(err) {
       console.error(err);
@@ -1762,25 +1762,40 @@
     $('shTxt').onclick = function(){ d.remove(); shareText(); };
   }
 
-  // ---------- In-app PDF: PDF is built inside the WebView and handed to Kodular as base64 ----------
-  // message format:  pdf|<mode>|<file name>|<base64>      mode = save | print | share
-  async function sendPdf(mode){
+  // ---------- In-app PDF: built inside the WebView and saved with Blob + <a download> (no Kodular File/Base64 blocks needed) ----------
+  function pdfDoneDialog(blob, name){
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px';
+    d.innerHTML = '<div style="background:#fff;border-radius:16px;padding:22px;max-width:360px;width:100%;text-align:center;font-family:Arial,sans-serif"><div style="font-size:20px;font-weight:bold;margin-bottom:6px">PDF taiyaar hai ✔</div><div style="font-size:14px;color:#555;margin-bottom:6px">' + escHtml(name) + '</div><div style="font-size:12px;color:#777;margin-bottom:14px">Download na dikhe to neeche se dobara try karein</div><button id="pdDl" style="width:100%;padding:13px;border:0;border-radius:10px;background:#7a42d6;color:#fff;font-size:16px;margin-bottom:10px">📄 Download</button><button id="pdBr" style="width:100%;padding:13px;border:0;border-radius:10px;background:#4a5fd9;color:#fff;font-size:16px;margin-bottom:10px">🌐 Browser mein kholein</button><button id="pdX" style="width:100%;padding:10px;border:0;border-radius:10px;background:#eee;font-size:15px">Band karein</button></div>';
+    document.body.appendChild(d);
+    $('pdX').onclick = function(){ d.remove(); };
+    $('pdDl').onclick = function(){ downloadBlob(blob, name); toast('PDF download ho rahi hai ✔', 'ok', 2200); };
+    $('pdBr').onclick = function(){ d.remove(); viaApp('pdf', function(){ toast('Browser nahi khula — Kodular mein "open" block check karein', 'err', 3500); }); };
+  }
+  async function inAppPdf(){
     if (pdfBusy) return;
-    const br = getBridge();
-    if (!br) { if (mode === 'print') localPrint(); else localPdf(); return; }
     pdfBusy = true;
     toast('PDF ban rahi hai… thoda ruko', '', 9000);
     try {
       const pdf = await buildPdf();
-      const uri = pdf.output('datauristring');
-      const b64 = uri.slice(uri.indexOf('base64,') + 7);
-      br.setWebViewString('pdf|' + mode + '|' + fileBase() + '.pdf|' + b64);
-      toast(mode === 'print' ? 'Share sheet mein "Print" chunein' : mode === 'share' ? 'Share sheet khul rahi hai…' : 'Share sheet mein "Files / Drive / Save" chunein', 'ok', 3500);
-      guard(5000, function(){ toast('Share sheet nahi khuli? Kodular mein pdf| block ke baad Sharing1.ShareFile lagayein', '', 5000); });
+      const name = fileBase() + '.pdf';
+      const blob = pdf.output('blob');
+      downloadBlob(blob, name);
+      clearToasts();
+      toast('PDF download ho rahi hai ✔', 'ok', 2500);
+      pdfDoneDialog(blob, name);
     } catch(err){
       console.error(err);
+      clearToasts();
       toast('PDF ban nahi payi (internet check karein)', 'err', 3500);
     } finally { pdfBusy = false; }
+  }
+  async function sendPdf(mode){
+    const br = getBridge();
+    if (!br) { if (mode === 'print') localPrint(); else if (mode === 'share') sharePdfFlow(); else localPdf(); return; }
+    if (mode === 'print') { viaApp('print', localPrint); return; }          // opens in phone browser -> print dialog
+    if (mode === 'share') { viaApp('share', inAppPdf); return; }            // opens in phone browser -> share sheet
+    inAppPdf();                                                              // PDF button: Blob + anchor download
   }
   $('printBtn').addEventListener('click', function(){ sendPdf('print'); });
   $('pdfBtn').addEventListener('click', function(){ sendPdf('save'); });
@@ -1797,12 +1812,12 @@
     d.innerHTML = '<div style="background:#fff;border-radius:16px;padding:22px;max-width:360px;width:100%;text-align:center;font-family:Arial,sans-serif"><div style="font-size:20px;font-weight:bold;margin-bottom:6px">PDF taiyaar hai ✔</div><div style="font-size:14px;color:#555;margin-bottom:16px">' + escHtml(name) + '</div><button id="shNow" style="width:100%;padding:14px;border:0;border-radius:10px;background:#4a5fd9;color:#fff;font-size:17px;margin-bottom:10px">📤 Share karein</button><button id="shDl" style="width:100%;padding:12px;border:0;border-radius:10px;background:#7a42d6;color:#fff;font-size:16px;margin-bottom:10px">📄 Download</button><button id="shX" style="width:100%;padding:10px;border:0;border-radius:10px;background:#eee;font-size:15px">Band karein</button></div>';
     document.body.appendChild(d);
     $('shX').onclick = function(){ d.remove(); };
-    $('shDl').onclick = function(){ pdf.save(name); };
+    $('shDl').onclick = function(){ downloadBlob(pdf.output('blob'), name); };
     $('shNow').onclick = async function(){
       try {
         if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); d.remove(); }
-        else { pdf.save(name); toast('Share is browser mein nahi hai — PDF download ho gayi', '', 3000); }
-      } catch(err){ if (!err || err.name !== 'AbortError') pdf.save(name); }
+        else { downloadBlob(pdf.output('blob'), name); toast('Share is browser mein nahi hai — PDF download ho gayi', '', 3000); }
+      } catch(err){ if (!err || err.name !== 'AbortError') downloadBlob(pdf.output('blob'), name); }
     };
   }
 
@@ -1841,12 +1856,18 @@
   }
 
   function downloadBlob(blob, name){
-    const url = URL.createObjectURL(blob);
+    // Blob -> object URL -> hidden <a download> click (works in Kodular WebView / Chrome, no showSaveFilePicker)
+    const type = (blob && blob.type) || (/\.pdf$/i.test(name) ? 'application/pdf' : 'application/octet-stream');
+    const b = new Blob([blob], { type: type });
+    const url = URL.createObjectURL(b);
     const a = document.createElement('a');
-    a.href = url; a.download = name;
-    document.body.appendChild(a); a.click();
-    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 400);
+    a.href = url; a.download = name; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+    setTimeout(function(){ try { URL.revokeObjectURL(url); } catch(e){} }, 60000);
   }
+  function clearToasts(){ const h = $('toastHost'); if (h) h.innerHTML = ''; }
 
   function importObject(obj){
     if (!obj || typeof obj !== 'object') throw new Error('bad file');
