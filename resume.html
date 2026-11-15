@@ -1689,7 +1689,7 @@
       im.onerror = function(){ res(''); };
       im.onload = function(){
         try {
-          const k = Math.min(1, 480 / Math.max(im.naturalWidth, im.naturalHeight));
+          const k = Math.min(1, 400 / Math.max(im.naturalWidth, im.naturalHeight));
           const w = Math.round(im.naturalWidth * k), h = Math.round(im.naturalHeight * k);
           const c = document.createElement('canvas'); c.width = w; c.height = h;
           const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(im, 0, 0, w, h);
@@ -1699,9 +1699,10 @@
       im.src = src;
     });
   }
-  async function handoffUrl(act){
+  async function handoffUrl(act, nonce){
     saveAll(); savePrefs();
     const obj = buildExport();
+    if (nonce) obj.t = nonce + '_' + Math.random().toString(36).slice(2);
     obj.photo = await smallPhoto(photoSrc);
     let bytes = new TextEncoder().encode(JSON.stringify(obj)), z = 0;
     try { if (window.CompressionStream) { bytes = await pipe(bytes, CompressionStream); z = 1; } } catch(e){ z = 0; }
@@ -1717,15 +1718,48 @@
       if (!left) fb();
     }, ms);
   }
+  // Kodular blocks: if contains "open" -> DataUri = value minus "open";  else -> ShareMessage(value minus "share")
+  // so the data we send must never contain the words "open" / "share" by accident.
+  function safeWords(t){
+    return String(t).replace(/open/gi, function(m){ return m.charAt(0) + '\u200b' + m.slice(1); })
+                    .replace(/share/gi, function(m){ return m.charAt(0) + '\u200b' + m.slice(1); });
+  }
   async function viaApp(act, fb){
     const br = getBridge();
     if (!br) { fb(); return; }
     toast('Browser mein khul raha hai…', '', 3000);
     try {
-      const url = await handoffUrl(act);
-      br.setWebViewString('open:' + url);
+      let url = '';
+      for (let n = 0; n < 60; n++) {
+        url = await handoffUrl(act, n);
+        if (!/open/i.test(url)) break;
+      }
+      br.setWebViewString('open' + url);
       guard(2500, fb);
     } catch(e){ fb(); }
+  }
+  function shareText(){
+    const br = getBridge();
+    const n = state.layout === 2 ? 2 : 1;
+    const cv = $('cvRoot' + n);
+    let t = cv ? (cv.innerText || cv.textContent || '') : '';
+    t = t.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, 8000);
+    if (!t) { toast('Share karne ke liye text nahi mila', 'err', 2200); return; }
+    if (!br) { try { navigator.share({ title: fileBase().replace(/_/g, ' '), text: t }); } catch(e){} return; }
+    br.setWebViewString('share' + safeWords(t));
+    guard(2500, function(){
+      try { navigator.clipboard.writeText(t).then(function(){ toast('Share sheet nahi khuli — text copy ho gaya', '', 3000); }); }
+      catch(e){ toast('Share nahi ho paya — Kodular blocks check karein', 'err', 3000); }
+    });
+  }
+  function shareChooser(){
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px';
+    d.innerHTML = '<div style="background:#fff;border-radius:16px;padding:20px;max-width:360px;width:100%;text-align:center;font-family:Arial,sans-serif"><div style="font-size:20px;font-weight:bold;margin-bottom:14px">📤 Share</div><button id="shPdf" style="width:100%;padding:14px;border:0;border-radius:10px;background:#4a5fd9;color:#fff;font-size:16px;margin-bottom:10px">📄 PDF share karein</button><button id="shTxt" style="width:100%;padding:14px;border:0;border-radius:10px;background:#2e9e3e;color:#fff;font-size:16px;margin-bottom:10px">📝 Resume text share karein</button><button id="shNo" style="width:100%;padding:10px;border:0;border-radius:10px;background:#eee;font-size:15px">Band karein</button></div>';
+    document.body.appendChild(d);
+    $('shNo').onclick = function(){ d.remove(); };
+    $('shPdf').onclick = function(){ d.remove(); viaApp('share', sharePdfFlow); };
+    $('shTxt').onclick = function(){ d.remove(); shareText(); };
   }
 
   $('printBtn').addEventListener('click', function(){ viaApp('print', localPrint); });
@@ -1825,7 +1859,7 @@
     } catch(e) { toast('Save ho gaya ✔', 'ok', 1800); }
   });
 
-  $('shareBtn').addEventListener('click', function(){ if (getBridge()) viaApp('share', sharePdfFlow); else shareBackup(); });
+  $('shareBtn').addEventListener('click', function(){ if (getBridge()) shareChooser(); else shareBackup(); });
   async function shareBackup(){
     saveAll();
     const json = JSON.stringify(buildExport());
