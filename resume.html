@@ -662,6 +662,7 @@
 (function(){
   'use strict';
   try {
+  try { if (/[#&]d=/.test(location.hash) && /do=/.test(location.hash)) window.__handoff = true; } catch(e){}
 
   // =====================================================
   //  Helpers
@@ -669,8 +670,8 @@
   const $ = function(id){ return document.getElementById(id); };
   const LS = {
     get: function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
-    set: function(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } },
-    del: function(k){ try { localStorage.removeItem(k); } catch(e){} }
+    set: function(k, v){ if (window.__handoff) return true; try { localStorage.setItem(k, v); return true; } catch(e){ return false; } },
+    del: function(k){ if (window.__handoff) return; try { localStorage.removeItem(k); } catch(e){} }
   };
   const KEYS = {
     layout: 'cv_active_layout_v1',
@@ -1598,7 +1599,6 @@
   window.addEventListener('beforeprint', function(){ oldTitle = document.title; document.title = fileBase(); hideCtrl(); });
   window.addEventListener('afterprint', function(){ document.title = oldTitle; });
 
-  $('printBtn').addEventListener('click', function(){ hideCtrl(); setTimeout(function(){ window.print(); }, 60); });
 
   function loadScript(src){
     return new Promise(function(res, rej){
@@ -1613,37 +1613,41 @@
   }
 
   let pdfBusy = false;
-  $('pdfBtn').addEventListener('click', async function(){
-    if (pdfBusy) return;
-    pdfBusy = true;
+  async function buildPdf(){
     hideCtrl();
     const n = state.layout === 2 ? 2 : 1;
+    await loadPdfLibs();
+    const cv = $('cvRoot' + n);
+    const px = Math.min(3, Math.max(2, (window.devicePixelRatio || 1) * 1.5));
+    const canvas = await window.html2canvas(cv, {
+      scale: px, useCORS: true, backgroundColor: '#ffffff', logging: false, windowWidth: 1200,
+      onclone: function(doc){
+        doc.documentElement.style.setProperty('--cv-scale', '1');
+        doc.body.classList.add('pdf-mode');
+        const cont = doc.getElementById('layout' + n);
+        cont.style.display = 'block';
+        cont.classList.remove('play');
+        const wrap = cont.querySelector('.cv-scale-wrap');
+        wrap.style.cssText = 'position:static;width:210mm;height:297mm;overflow:visible;margin:0;box-shadow:none;';
+        const c = doc.getElementById('cvRoot' + n);
+        c.style.transform = 'none'; c.style.position = 'relative'; c.style.top = '0'; c.style.left = '0';
+        c.style.border = 'none'; c.style.boxShadow = 'none';
+        doc.querySelectorAll('.selected-box').forEach(function(x){ x.classList.remove('selected-box'); });
+        doc.querySelectorAll('[contenteditable]').forEach(function(x){ x.removeAttribute('contenteditable'); });
+      }
+    });
+    const jsPDF = window.jspdf.jsPDF;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+    pdf.setProperties({ title: fileBase().replace(/_/g, ' '), subject: 'Curriculum Vitae', creator: 'CV Builder' });
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+    return pdf;
+  }
+  async function localPdf(){
+    if (pdfBusy) return;
+    pdfBusy = true;
     toast('PDF ban rahi hai… thoda ruko', '', 7000);
     try {
-      await loadPdfLibs();
-      const cv = $('cvRoot' + n);
-      const px = Math.min(3, Math.max(2, (window.devicePixelRatio || 1) * 1.5));
-      const canvas = await window.html2canvas(cv, {
-        scale: px, useCORS: true, backgroundColor: '#ffffff', logging: false, windowWidth: 1200,
-        onclone: function(doc){
-          doc.documentElement.style.setProperty('--cv-scale', '1');
-          doc.body.classList.add('pdf-mode');
-          const cont = doc.getElementById('layout' + n);
-          cont.style.display = 'block';
-          cont.classList.remove('play');
-          const wrap = cont.querySelector('.cv-scale-wrap');
-          wrap.style.cssText = 'position:static;width:210mm;height:297mm;overflow:visible;margin:0;box-shadow:none;';
-          const c = doc.getElementById('cvRoot' + n);
-          c.style.transform = 'none'; c.style.position = 'relative'; c.style.top = '0'; c.style.left = '0';
-          c.style.border = 'none'; c.style.boxShadow = 'none';
-          doc.querySelectorAll('.selected-box').forEach(function(x){ x.classList.remove('selected-box'); });
-          doc.querySelectorAll('[contenteditable]').forEach(function(x){ x.removeAttribute('contenteditable'); });
-        }
-      });
-      const jsPDF = window.jspdf.jsPDF;
-      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-      pdf.setProperties({ title: fileBase().replace(/_/g, ' '), subject: 'Curriculum Vitae', creator: 'CV Builder' });
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+      const pdf = await buildPdf();
       pdf.save(fileBase() + '.pdf');
       toast('PDF download ho gayi ✔', 'ok', 2500);
     } catch(err) {
@@ -1653,7 +1657,122 @@
     } finally {
       pdfBusy = false;
     }
-  });
+  }
+  function localPrint(){ hideCtrl(); setTimeout(function(){ window.print(); }, 60); }
+
+  // ---------- Kodular WebView bridge: Print / PDF / Share open this page in the phone browser ----------
+  function getBridge(){
+    for (const w of [window, window.parent, window.top]) {
+      try { if (w.AppInventor && w.AppInventor.setWebViewString) return w.AppInventor; } catch(e){}
+    }
+    return null;
+  }
+  function toB64u(bytes){
+    let t = ''; const CH = 0x8000;
+    for (let i = 0; i < bytes.length; i += CH) t += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+    return btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function fromB64u(t){
+    t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '=';
+    const r = atob(t), b = new Uint8Array(r.length);
+    for (let i = 0; i < r.length; i++) b[i] = r.charCodeAt(i);
+    return b;
+  }
+  async function pipe(bytes, S){
+    const st = new S('gzip'), w = st.writable.getWriter(); w.write(bytes); w.close();
+    return new Uint8Array(await new Response(st.readable).arrayBuffer());
+  }
+  function smallPhoto(src){
+    return new Promise(function(res){
+      if (!src) return res('');
+      const im = new Image();
+      im.onerror = function(){ res(''); };
+      im.onload = function(){
+        try {
+          const k = Math.min(1, 480 / Math.max(im.naturalWidth, im.naturalHeight));
+          const w = Math.round(im.naturalWidth * k), h = Math.round(im.naturalHeight * k);
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(im, 0, 0, w, h);
+          res(c.toDataURL('image/jpeg', 0.75));
+        } catch(e){ res(''); }
+      };
+      im.src = src;
+    });
+  }
+  async function handoffUrl(act){
+    saveAll(); savePrefs();
+    const obj = buildExport();
+    obj.photo = await smallPhoto(photoSrc);
+    let bytes = new TextEncoder().encode(JSON.stringify(obj)), z = 0;
+    try { if (window.CompressionStream) { bytes = await pipe(bytes, CompressionStream); z = 1; } } catch(e){ z = 0; }
+    return location.origin + location.pathname + '#do=' + act + '&z=' + z + '&d=' + toB64u(bytes);
+  }
+  // runs fb() if the app did not go to background (= Kodular blocks missing or Chrome did not open)
+  function guard(ms, fb){
+    let left = 0;
+    const h = function(){ if (document.hidden) left = 1; }, b = function(){ left = 1; };
+    document.addEventListener('visibilitychange', h); window.addEventListener('blur', b); window.addEventListener('pagehide', b);
+    setTimeout(function(){
+      document.removeEventListener('visibilitychange', h); window.removeEventListener('blur', b); window.removeEventListener('pagehide', b);
+      if (!left) fb();
+    }, ms);
+  }
+  async function viaApp(act, fb){
+    const br = getBridge();
+    if (!br) { fb(); return; }
+    toast('Browser mein khul raha hai…', '', 3000);
+    try {
+      const url = await handoffUrl(act);
+      br.setWebViewString('open:' + url);
+      guard(2500, fb);
+    } catch(e){ fb(); }
+  }
+
+  $('printBtn').addEventListener('click', function(){ viaApp('print', localPrint); });
+  $('pdfBtn').addEventListener('click', function(){ viaApp('pdf', localPdf); });
+
+  // Share PDF (used on the page opened from the app, and in normal browsers)
+  async function sharePdfFlow(){
+    toast('PDF ban rahi hai… thoda ruko', '', 7000);
+    let pdf;
+    try { pdf = await buildPdf(); } catch(e){ toast('PDF ban nahi payi (internet check karein)', 'err', 3500); return; }
+    const name = fileBase() + '.pdf';
+    const file = new File([pdf.output('blob')], name, { type: 'application/pdf' });
+    let d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px';
+    d.innerHTML = '<div style="background:#fff;border-radius:16px;padding:22px;max-width:360px;width:100%;text-align:center;font-family:Arial,sans-serif"><div style="font-size:20px;font-weight:bold;margin-bottom:6px">PDF taiyaar hai ✔</div><div style="font-size:14px;color:#555;margin-bottom:16px">' + escHtml(name) + '</div><button id="shNow" style="width:100%;padding:14px;border:0;border-radius:10px;background:#4a5fd9;color:#fff;font-size:17px;margin-bottom:10px">📤 Share karein</button><button id="shDl" style="width:100%;padding:12px;border:0;border-radius:10px;background:#7a42d6;color:#fff;font-size:16px;margin-bottom:10px">📄 Download</button><button id="shX" style="width:100%;padding:10px;border:0;border-radius:10px;background:#eee;font-size:15px">Band karein</button></div>';
+    document.body.appendChild(d);
+    $('shX').onclick = function(){ d.remove(); };
+    $('shDl').onclick = function(){ pdf.save(name); };
+    $('shNow').onclick = async function(){
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); d.remove(); }
+        else { pdf.save(name); toast('Share is browser mein nahi hai — PDF download ho gayi', '', 3000); }
+      } catch(err){ if (!err || err.name !== 'AbortError') pdf.save(name); }
+    };
+  }
+
+  // Page opened from the app: import data and run the requested action
+  (function(){
+    if (!window.__handoff) return;
+    window.__runHandoff = async function(){
+      try {
+        const q = new URLSearchParams(location.hash.slice(1));
+        const act = q.get('do'), z = q.get('z') === '1', d = q.get('d');
+        try { history.replaceState(null, '', location.pathname); } catch(e){}
+        if (!d) return;
+        let bytes = fromB64u(d);
+        if (z) bytes = await pipe(bytes, DecompressionStream);
+        importObject(JSON.parse(new TextDecoder().decode(bytes)));
+        toast('App ka resume load ho gaya ✔', 'ok', 2200);
+        setTimeout(function(){ measureA4(); fit(); updateStatus();
+          if (act === 'print') localPrint();
+          else if (act === 'pdf') localPdf();
+          else if (act === 'share') sharePdfFlow();
+        }, 900);
+      } catch(e){ console.error(e); toast('App ka data load nahi hua', 'err', 3000); }
+    };
+  })();
 
   // =====================================================
   //  Save / Share / Load / Reset
@@ -1698,6 +1817,7 @@
 
   $('saveBtn').addEventListener('click', function(){
     saveAll(); savePrefs();
+    if (getBridge()) { toast('Save ho gaya ✔ (is app mein saved hai)', 'ok', 2400); return; }
     try {
       const blob = new Blob([JSON.stringify(buildExport())], { type: 'application/json' });
       downloadBlob(blob, fileBase() + '_backup.json');
@@ -1705,7 +1825,8 @@
     } catch(e) { toast('Save ho gaya ✔', 'ok', 1800); }
   });
 
-  $('shareBtn').addEventListener('click', async function(){
+  $('shareBtn').addEventListener('click', function(){ if (getBridge()) viaApp('share', sharePdfFlow); else shareBackup(); });
+  async function shareBackup(){
     saveAll();
     const json = JSON.stringify(buildExport());
     const name = fileBase() + '_backup.json';
@@ -1725,9 +1846,22 @@
       } else { toast('File download ho rahi hai', 'ok', 2000); }
     } catch(e) { toast('File download ho rahi hai', 'ok', 2000); }
     downloadBlob(new Blob([json], { type: 'application/json' }), name);
-  });
+  }
 
+  function loadDialog(){
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px';
+    d.innerHTML = '<div style="background:#fff;border-radius:16px;padding:20px;max-width:380px;width:100%;font-family:Arial,sans-serif;text-align:center"><div style="font-size:20px;font-weight:bold;margin-bottom:10px">📥 Load</div><button id="ldF" style="width:100%;padding:13px;border:0;border-radius:10px;background:#4a5fd9;color:#fff;font-size:16px;margin-bottom:12px">📁 Backup file chunein</button><div style="font-size:13px;color:#555;margin-bottom:6px">ya backup ka text yahan paste karein:</div><textarea id="ldT" style="width:100%;height:90px;box-sizing:border-box;border:1px solid #bbb;border-radius:8px;padding:8px;font-size:13px"></textarea><button id="ldGo" style="width:100%;padding:12px;border:0;border-radius:10px;background:#2e9e3e;color:#fff;font-size:16px;margin:10px 0">Load karein</button><button id="ldX" style="width:100%;padding:10px;border:0;border-radius:10px;background:#eee;font-size:15px">Band karein</button></div>';
+    document.body.appendChild(d);
+    $('ldX').onclick = function(){ d.remove(); };
+    $('ldF').onclick = function(){ const inp = $('importInput' + (state.layout === 2 ? 2 : 1)); if (inp) { inp.value = ''; inp.click(); } };
+    $('ldGo').onclick = function(){
+      try { importObject(JSON.parse($('ldT').value.trim())); toast('Load ho gaya ✔', 'ok', 1800); d.remove(); }
+      catch(e){ toast('Ye text sahi nahi hai', 'err', 2600); }
+    };
+  }
   $('loadBtn').addEventListener('click', function(){
+    if (getBridge()) { loadDialog(); return; }
     const inp = $('importInput' + (state.layout === 2 ? 2 : 1));
     if (inp) { inp.value = ''; inp.click(); }
   });
@@ -1788,6 +1922,8 @@
     setTimeout(function(){ measureA4(); fit(); updateStatus(); }, 200);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measureA4(); fit(); updateStatus(); });
   })();
+
+  if (window.__runHandoff) setTimeout(window.__runHandoff, 300);
 
   } catch (err) {
     console.error('CV init error:', err);
