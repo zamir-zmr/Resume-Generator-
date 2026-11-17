@@ -1,5 +1,5 @@
 /* Resume Maker - redirect shell service worker: offline shell only. Firebase calls are never cached. */
-const SHELL = 'resume-shell-v8', ROOT = self.registration.scope;
+const SHELL = 'resume-shell-v9', ROOT = self.registration.scope;
 const APP_SHELL = ['', 'manifest.json', 'icon-192.png', 'icon-512.png', 'resume.html', 'privacy-policy.html'].map(u => ROOT + u);
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(SHELL).then(c => Promise.allSettled(APP_SHELL.map(u => c.add(new Request(u, { cache: 'reload' }))))).then(() => self.skipWaiting()));

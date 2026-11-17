@@ -1752,7 +1752,7 @@
     t = t.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, 8000);
     if (!t) { toast('Share karne ke liye text nahi mila', 'err', 2200); return; }
     if (!br) { try { navigator.share({ title: fileBase().replace(/_/g, ' '), text: t }); } catch(e){} return; }
-    br.setWebViewString('share' + safeWords(t));
+    br.setWebViewString('txt|' + t);
     guard(2500, function(){
       try { navigator.clipboard.writeText(t).then(function(){ toast('Share sheet nahi khuli — text copy ho gaya', '', 3000); }); }
       catch(e){ toast('Share nahi ho paya — Kodular blocks check karein', 'err', 3000); }
@@ -1825,7 +1825,11 @@
     try {
       const txt = asciiPdf(pdf.__preview, pdf.__w, pdf.__h);
       br.setWebViewString('pdf|' + mode + '|' + PDF_NAME + '|' + txt);
-      if (statusEl) statusEl.textContent = mode === 'save' ? 'Save menu khul raha hai…' : mode === 'print' ? 'Print menu khul raha hai…' : 'Share menu khul raha hai…';
+      if (mode === 'save') {
+        if (statusEl) { statusEl.textContent = 'Downloads mein save ho raha hai…'; setTimeout(function(){ statusEl.textContent = ''; }, 3500); }
+        return;
+      }
+      if (statusEl) statusEl.textContent = mode === 'print' ? 'Print ke liye PDF khul rahi hai…' : 'Share menu khul raha hai…';
       guard(6000, function(){
         if (statusEl) statusEl.textContent = '';
         toast('Menu nahi khula — Kodular blocks check karein (README_KODULAR_BLOCKS.txt)', 'err', 4500);
