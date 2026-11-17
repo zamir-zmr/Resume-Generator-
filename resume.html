@@ -1595,8 +1595,11 @@
     return (t || 'Resume') + '_CV';
   }
 
+  // PDF file name is ALWAYS fixed (header name does not matter) - works with Kodular blocks without any change
+  const PDF_NAME = 'cv.pdf';
+
   let oldTitle = document.title;
-  window.addEventListener('beforeprint', function(){ oldTitle = document.title; document.title = fileBase(); hideCtrl(); });
+  window.addEventListener('beforeprint', function(){ oldTitle = document.title; document.title = 'cv'; hideCtrl(); });
   window.addEventListener('afterprint', function(){ document.title = oldTitle; });
 
 
@@ -1638,10 +1641,11 @@
     });
     const jsPDF = window.jspdf.jsPDF;
     const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-    pdf.setProperties({ title: fileBase().replace(/_/g, ' '), subject: 'Curriculum Vitae', creator: 'CV Builder' });
+    pdf.setProperties({ title: 'CV', subject: 'Curriculum Vitae', creator: 'CV Builder' });
     const jpg = canvas.toDataURL('image/jpeg', getBridge() ? 0.88 : 0.95);
     pdf.addImage(jpg, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
     pdf.__preview = jpg;
+    pdf.__w = canvas.width; pdf.__h = canvas.height;
     return pdf;
   }
   async function localPdf(){
@@ -1650,7 +1654,7 @@
     toast('PDF ban rahi hai… thoda ruko', '', 7000);
     try {
       const pdf = await buildPdf();
-      downloadBlob(pdf.output('blob'), fileBase() + '.pdf');
+      downloadBlob(pdf.output('blob'), PDF_NAME);
       toast('PDF download ho gayi ✔', 'ok', 2500);
     } catch(err) {
       console.error(err);
@@ -1786,30 +1790,50 @@
     try {
       const file = new File([blob], name, { type: 'application/pdf' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: fileBase().replace(/_/g, ' ') });
+        await navigator.share({ files: [file], title: 'CV' });
         return;
       }
     } catch(err){ if (err && err.name === 'AbortError') return; }
     downloadBlob(blob, name);
     toast('PDF share nahi ho saki — download kar di. Text share bhi use kar sakte hain', '', 3800);
   }
-  // Native hand-off: PDF goes to Kodular as base64 ("pdf|mode|name|base64"); Kodular saves it and opens the phone's own share sheet
-  // (Save to Files / Drive / Print / WhatsApp) on top of the app - no browser, no header.
+  // Native hand-off: PDF goes to Kodular as PLAIN TEXT: "pdf|mode|cv.pdf|<pdf text>"
+  // The PDF is built as a 100% ASCII file (JPEG page image stored as ASCIIHex), so Kodular File1.SaveFile(text, "cv.pdf")
+  // writes a valid, openable PDF - no Base64 decoding / extension needed. The name is always cv.pdf and never a path.
+  function asciiPdf(jpgDataUrl, w, h){
+    const bin = atob(jpgDataUrl.slice(jpgDataUrl.indexOf('base64,') + 7));
+    const HX = '0123456789abcdef', parts = new Array(bin.length);
+    for (let i = 0; i < bin.length; i++) { const c = bin.charCodeAt(i); parts[i] = HX[c >> 4] + HX[c & 15]; }
+    const hex = parts.join('') + '>';
+    const objs = [
+      '<< /Type /Catalog /Pages 2 0 R >>',
+      '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>',
+      '<< /Type /XObject /Subtype /Image /Width ' + w + ' /Height ' + h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter [/ASCIIHexDecode /DCTDecode] /Length ' + hex.length + ' >>\nstream\n' + hex + '\nendstream',
+      '<< /Length 37 >>\nstream\nq 595.28 0 0 841.89 0 0 cm /Im0 Do Q\nendstream'
+    ];
+    let out = '%PDF-1.4\n', offs = [];
+    objs.forEach(function(o, i){ offs.push(out.length); out += (i + 1) + ' 0 obj\n' + o + '\nendobj\n'; });
+    const xref = out.length;
+    out += 'xref\n0 ' + (objs.length + 1) + '\n0000000000 65535 f \n';
+    offs.forEach(function(o){ out += String(o).padStart(10, '0') + ' 00000 n \n'; });
+    out += 'trailer\n<< /Size ' + (objs.length + 1) + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n';
+    return out;
+  }
   function sendNative(pdf, mode, name, statusEl){
     const br = getBridge();
     try {
-      const uri = pdf.output('datauristring');
-      const b64 = uri.slice(uri.indexOf('base64,') + 7);
-      br.setWebViewString('pdf|' + mode + '|' + name + '|' + b64);
+      const txt = asciiPdf(pdf.__preview, pdf.__w, pdf.__h);
+      br.setWebViewString('pdf|' + mode + '|' + PDF_NAME + '|' + txt);
       if (statusEl) statusEl.textContent = mode === 'save' ? 'Save menu khul raha hai…' : mode === 'print' ? 'Print menu khul raha hai…' : 'Share menu khul raha hai…';
       guard(6000, function(){
         if (statusEl) statusEl.textContent = '';
-        toast('Menu nahi khula — Kodular: File1 Scope = App rakhein (README dekhein)', 'err', 4500);
+        toast('Menu nahi khula — Kodular blocks check karein (README_KODULAR_BLOCKS.txt)', 'err', 4500);
       });
     } catch(e){ toast('PDF bhej nahi payi', 'err', 3000); }
   }
   function pdfOverlay(pdf, mode){
-    const name = fileBase() + '.pdf';
+    const name = PDF_NAME;
     const br = getBridge();
     const btn = function(id, bg, txt){ return '<button id="' + id + '" style="width:100%;padding:14px;border:0;border-radius:12px;background:' + bg + ';color:#fff;font-size:16px;font-weight:600;margin-bottom:10px">' + txt + '</button>'; };
     const d = openOverlay(
@@ -1863,7 +1887,7 @@
     toast('PDF ban rahi hai… thoda ruko', '', 7000);
     let pdf;
     try { pdf = await buildPdf(); } catch(e){ toast('PDF ban nahi payi (internet check karein)', 'err', 3500); return; }
-    const name = fileBase() + '.pdf';
+    const name = PDF_NAME;
     const file = new File([pdf.output('blob')], name, { type: 'application/pdf' });
     let d = document.createElement('div');
     d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px';
