@@ -1,29 +1,34 @@
-KODULAR BLOCKS - Resume Maker (Print / PDF / Share ke liye)
+KODULAR BLOCKS - Resume Maker  [v10]
 
-Components jo Screen1 mein hone chahiye: Web_Viewer1, Activity_Starter1, Sharing1 (tumhare paas pehle se hain).
+Teen buttons:
+  Share PDF       -> app ke andar cv.pdf banti hai, phone ki native Share sheet khulti hai   (message: pdf|share|cv.pdf|<pdf text>)
+  Download / Save -> Chrome khulta hai, cv.pdf Downloads mein download hoti hai               (message: open<link>)
+  Print           -> Chrome khulta hai, Print / Save as PDF dialog khulta hai                  (message: open<link>)
 
-Designer mein Activity_Starter1:
-  Action = android.intent.action.VIEW
-  (DataUri khali chhod do - block se set hoga)
+Designer: Web_Viewer1, File1 (Scope = App), Sharing1, Activity_Starter1 (Action = android.intent.action.VIEW, DataUri khali)
+(KIO4_Base641 aur Switch1 hata sakte ho - zaroorat nahi)
 
 Blocks:
 
+initialize global b64 to ""
+
+when File1.AfterFileSaved (fileName)
+do  Sharing1.ShareFile( file = join( "/storage/emulated/0/Android/data/<PACKAGE NAME>/files/" ,
+                                     replace all( fileName , "file://" , "" ) ) )
+    (agar fileName pehle se "/storage/..." ho to sirf replace all wala hissa use karo)
+
 when Web_Viewer1.WebViewStringChange (value)
-do  if   contains text( get value , piece "open:" )
-    then set Activity_Starter1.DataUri  to  replace all( text = get value , segment = "open:" , replacement = "" )
+do  if starts at( value , "pdf|" ) = 1
+    then set global b64 to select list item( split( value , "|" ) , 4 )
+         set File1.Scope to App
+         call File1.SaveFile( text = global b64 , fileName = "cv.pdf" )
+    else if contains( value , "open" )
+    then set Activity_Starter1.DataUri to replace all( value , "open" , "" )
          call Activity_Starter1.StartActivity
-    else if contains text( get value , piece "share:" )
-    then call Sharing1.ShareMessage
-            message = replace all( text = get value , segment = "share:" , replacement = "" )
+    else call Sharing1.ShareMessage( replace all( value , "share" , "" ) )
 
-(Purane block mein "Download PDF" wala message hata do, wo ab nahi chahiye.)
+(global mode aur uska if/else hata do - ab zaroorat nahi.)
 
-Back button ke liye (optional):
+Back button (optional):
 when Screen1.BackPressed
 do  if Web_Viewer1.CanGoBack then call Web_Viewer1.GoBack else close application
-
-Kaise kaam karta hai:
-- Print / PDF / Share dabane par app "open:<link>" bhejta hai -> phone ka browser (Chrome) resume ke saath khulta hai
-  -> wahan PDF download / Print dialog / Share PDF automatically chalta hai.
-- Save = app ke andar save (autosave bhi hota hai). Load = file chuno ya text paste karo.
-- Photo: WebView ka file chooser chahiye (Kodular Web Viewer mein file upload allowed hona chahiye).

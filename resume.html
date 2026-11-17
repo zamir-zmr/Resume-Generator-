@@ -1851,11 +1851,11 @@
     d.querySelector('#pdX').onclick = function(){ d.closeOverlay(); };
     d.querySelector('#pdTx').onclick = function(){ shareText(); };
     d.querySelector('#pdDl').onclick = function(){
-      if (br) sendNative(pdf, 'save', name, st);
+      if (br) viaApp('pdf', function(){ toast('Browser nahi khula — Kodular "open" block check karein (README)', 'err', 4000); });
       else { downloadBlob(blob, name); toast('PDF download ho rahi hai ✔', 'ok', 2200); }
     };
     d.querySelector('#pdPr').onclick = function(){
-      if (br) sendNative(pdf, 'print', name, st);
+      if (br) viaApp('print', function(){ toast('Browser nahi khula — Kodular "open" block check karein (README)', 'err', 4000); });
       else { d.closeOverlay(); setTimeout(localPrint, 150); }
     };
     d.querySelector('#pdSh').onclick = function(){
