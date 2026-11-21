@@ -1764,12 +1764,12 @@
     out += 'trailer\n<< /Size ' + (objs.length + 1) + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n';
     return out;
   }
-  // Share: PDF is built and handed to Kodular as "pdf|share|cv.pdf|<pdf text>" -> Kodular saves cv.pdf and opens the native share sheet (no popup).
+  // Share: PDF is built as ASCII text and handed to Kodular (WebViewString = whole PDF text) -> Kodular saves cv.pdf and opens the native share sheet (no popup).
   function sendNative(pdf){
     try {
       const br = getBridge();
       const txt = asciiPdf(pdf.__preview, pdf.__w, pdf.__h);
-      br.setWebViewString('pdf|share|' + PDF_NAME + '|' + txt);
+      br.setWebViewString(txt); // plain PDF text only (starts with %PDF-) -> Kodular saves it as cv.pdf and shares it
       guard(6000, function(){
         toast('Share menu nahi khula — Kodular blocks check karein (README_KODULAR_BLOCKS.txt)', 'err', 4500);
       });
